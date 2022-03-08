@@ -1,7 +1,7 @@
 # jhonesconrado.db
 Simple and lightweight Java BD for small applications that saves data to storage.
 
-##English
+## English
 A simple database that will save entities in subfolders, forming a Database.
 The project already contains methods to save, load by ID, load by filter, load all, delete by ID, delete by filter, delete all.
 
@@ -17,7 +17,7 @@ And implement a **onSetId** method to put the new ID in the variable, before sav
 
 In case of doubt, a previously configured entity already exists in the project, called PreEntity. Your entities can extend from this.
 
-##Português
+## Português
 Um simples banco de dados que irá salvar as entidades em subpastas, formando um Banco de Dados.
 O projeto já contém métodos para salvar, carregar por ID, carregar por filtro, carregar todos, deletar por ID, deletar por filtro, deletar todos.
 
@@ -33,7 +33,7 @@ E implementar um método **onSetId** para por o novo ID na variável, antes de s
 
 Em caso de dúvidas, uma entidade previamente configurada já existe no projeto, chamada PreEntity. Suas entidades podem extender desta.
 
-##Example of implementation / Exemplo de implementação
+## Example of implementation / Exemplo de implementação
 ```java
 public class PreEntity implements Entity{
     
@@ -58,7 +58,7 @@ public class PreEntity implements Entity{
 }
 ```
 
-##How to create and save a entity / Como criar e salvar uma entidade.
+## How to create and save a entity / Como criar e salvar uma entidade.
 Using the entity above as an example.
 
 ```java
@@ -99,20 +99,34 @@ Using the entity above as an example.
         new PreEntity().deleteAll();
 ```
 
-##Using filter / Usando filtro
-###English
+## Using filter / Usando filtro
+### English
 You can create a Map<String, String> and put the "fields" x "values" you want to filter.
 
-###The loadAll(filter, boolean, boolean) method
+#### The loadAll(filter, boolean, boolean) method
 The first boolean is for whether you want the word "value" in the filter to match fully or partially. True to fully match, false to partially match.
 
 The second boolean is used to know if all fields need to return true in the verification, or if just one returning true is enough.
 
-###Português
+### Português
 Você pode criar um Map<String, String> e por os "campos" x "valores" que deseja filtrar.
 
-###O método loadAll(filter, boolean, boolean)
+#### O método loadAll(filter, boolean, boolean)
 O primeiro boleano serve para saber se você quer que a palavra "valor" do filtro precise coincidir inteiramente ou parcialmente. Verdadeiro para coincidir inteiramente, falso para coincidir parcialmente.
 
 O segundo boleano serve para saber se todos os campos precisam retornar verdadeiro na verificação, ou se apenas um retornando verdadeiro já basta.
 
+## How to change the root DB folder name / Como mudar o nome da pasta raiz do BD
+you can just change the value of the String variable root.
+```java
+config.Config.root = "your new root";
+```
+
+I recommend making this change at software startup. 
+
+você pode simplesmente alterar o valor da variável String root.
+```java
+config.Config.root = "your new root";
+```
+
+Recomendo fazer essa alteração na inicialização do software.
