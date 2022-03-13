@@ -16,8 +16,11 @@
  */
 package testes;
 
+import core.JsonUtils;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -27,7 +30,11 @@ public class MainTest {
     
     public static void main(String[] args) throws IOException, FileNotFoundException, ClassNotFoundException {
         
+        Map<String, String> m = new HashMap<>();
+        m.put("nome", "jhones");
+        m.put("idade", "26");
         
+        System.out.println(JsonUtils.mapToJson(m));
     }
     
 }

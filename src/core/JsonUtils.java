@@ -26,6 +26,12 @@ import java.util.Map;
  */
 public class JsonUtils {
     
+    /**
+     * Recupera o valor de um atributo de um JSON.
+     * @param key Attribute key
+     * @param json JSON to find an attribute.
+     * @return Attribute value.
+     */
     public static String getAttribute(String key, String json){
         try {
             return getAttributes(json).get(key);
@@ -33,6 +39,75 @@ public class JsonUtils {
             return null;
         }
     }
+    
+    /**
+     * Convert a Map into a JSON String.
+     * @param map Map<String, String> to converter.
+     * @return JSON String.
+     */
+    public static String mapToJson(Map<String, String> map){
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        for(String a : map.keySet()){
+            if(sb.length() > 1){
+                sb.append(",");
+            }
+            sb.append("\"");
+            sb.append(a);
+            sb.append("\":");
+            String v = map.get(a);
+            boolean number = false;
+            try {
+                Double.parseDouble(v);
+                number = true;
+            } catch (NumberFormatException e) {
+            }
+            try {
+                Integer.parseInt(v);
+                number = true;
+            } catch (Exception e) {
+            }
+            if(!number){
+                sb.append("\"");
+            }
+            sb.append(v);
+            if(!number){
+                sb.append("\"");
+            }
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+    
+    /**
+     * Put an attribute in the map.
+     * @param map
+     * @param key
+     * @param value 
+     */
+    public static void putAttribute(Map<String, String> map, String key, String value){
+        if(value.startsWith("\"")){
+            value = value.substring(1);
+        }
+        if(value.endsWith("\"")){
+            value = value.substring(0, value.length()-1);
+        }
+        map.put(key, value);
+    }
+    
+    /**
+     * Put an attribute in the JSON String.
+     * @param json To put an attribute.
+     * @param key Attribute key.
+     * @param value Attribute value.
+     * @return JSON with a new attribute.
+     */
+    public static String puAttribute(String json, String key, String value){
+        Map<String, String> att = getAttributes(json);
+        att.put(key, value);
+        return mapToJson(att);
+    }
+    
     
     /**
      * Extracts data from a JSON and places it in a Map.
