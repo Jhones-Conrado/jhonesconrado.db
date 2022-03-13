@@ -157,6 +157,7 @@ public class IO {
      * @return Lista com todas as entidades que passaram no teste.
      * @throws IOException 
      */
+    @Deprecated
     public static <T extends Entity> List<T> loadAll(Class<T> classe, Map<String, String> filter, boolean convergence, boolean allfilters) throws IOException{
         if(filter != null){
             File pasta = new File(Config.root+"/"+classe.getName());
@@ -336,6 +337,31 @@ public class IO {
     }
     
     /**
+     * Carrega todas as entidades que passarem no teste do filtro informado como parâmetro.
+     * @param <T> Tipo da entidade.
+     * @param classe Classe da entidade a ser buscada.
+     * @param filter Filtro a ser usado na validação.
+     * @return Lista de entidades que passaram no teste.
+     * @throws IOException 
+     */
+    public static <T extends Entity> List<T> loadAll(Class<T> classe, Filter filter) throws IOException{
+        File pasta = new File(Config.root+"/"+classe.getName());
+        if(pasta.exists()){
+            File[] entidades = pasta.listFiles();
+            List<T> lista = new ArrayList<>();
+            for(File f : entidades){
+                BufferedReader r = Files.newBufferedReader(f.toPath(), StandardCharsets.UTF_8);
+                String json = r.readLine();
+                if(filter.match(json)){
+                    lista.add((T) gson.fromJson(json, classe));
+                }
+            }
+            return lista;
+        }
+        return new ArrayList<>();
+    }
+    
+    /**
      * Deleta uma entidade.
      * @param entity Entidade a ser deletada.
      */
@@ -367,9 +393,24 @@ public class IO {
      * @param allfilters Pricesa passar em todos os filtros? True para sim, False para contar aqueles que passarem em pelo menos um filtro.
      * @throws IOException 
      */
+    @Deprecated
     public static <T extends Entity> void deleteAllByFilter(Class<T> classe, Map<String, String> filter, boolean convergence, boolean allfilters) throws IOException{
         List<T> loadAll = loadAll(classe, filter, convergence, allfilters);
         for(T a : loadAll){
+            delete(a);
+        }
+    }
+    
+    /**
+     * Deleta todas as entidades que passaram em um determinado filtro. CUIDADO!!!
+     * @param <T> Tipo da entidade
+     * @param classe Classe da entidade
+     * @param filter Filtro a ser usado na busca pelas entidades a ser deletadas.
+     * @throws IOException 
+     */
+    public static <T extends Entity> void deleteAllByFilter(Class<T> classe, Filter filter) throws IOException{
+        List<T> la = loadAll(classe, filter);
+        for(T a : la){
             delete(a);
         }
     }

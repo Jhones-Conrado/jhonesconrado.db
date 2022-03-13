@@ -16,6 +16,7 @@
  */
 package interfaces;
 
+import core.Filter;
 import core.IO;
 import core.IdManager;
 import java.io.FileNotFoundException;
@@ -105,8 +106,13 @@ public interface Entity extends Serializable{
      * @return Lista filtrada de entidades.
      * @throws IOException 
      */
+    @Deprecated
     default <T extends Entity> List<T> loadAll(Map<String, String> filter, boolean convergence, boolean allfilters) throws IOException{
         return (List<T>) IO.loadAll(this.getClass(), filter, convergence, allfilters);
+    }
+    
+    default <T extends Entity> List<T> loadAll(Filter filter) throws IOException{
+        return (List<T>) IO.loadAll(this.getClass(), filter);
     }
     
     /**
@@ -133,8 +139,19 @@ public interface Entity extends Serializable{
      * @param allfilters Precisa passar em todos os filtros, ou apenas um já basta? true para todos, false para pelo menos um.
      * @throws IOException 
      */
+    @Deprecated
     default <T extends Entity> void deleteAllByFilter(Map<String, String> filter, boolean convergence, boolean allfilters) throws IOException{
         IO.deleteAllByFilter(this.getClass(), filter, convergence, allfilters);
+    }
+    
+    /**
+     * Aplica um filtro nas entidades e depois deleta todas que tenham passado no filtro.
+     * @param <T>
+     * @param filter Filtro a ser aplicado na busca por entidades a serem deletadas.
+     * @throws IOException 
+     */
+    default <T extends Entity> void deleteAllByFilter(Filter filter) throws IOException{
+        IO.deleteAllByFilter(this.getClass(), filter);
     }
     
 }
