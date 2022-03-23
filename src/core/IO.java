@@ -98,7 +98,8 @@ public class IO {
      * @throws IOException 
      */
     public static Entity load(Entity entidade, long id) throws IOException{
-        if(entidade.getClass().isInstance(Entity.class)){
+        
+        if(entidade instanceof Entity){
             String path = Config.root+"/"+entidade.getClass().getName()+"/"+String.valueOf(id);
             return (Entity) load(path, entidade.getClass());
         }
