@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import server.Connection;
+import server.ConnectionManager;
 import server.Server;
 
 /**
@@ -39,22 +40,22 @@ public class MainTest {
         new OnlyReceive();
         
         new Thread(new servidor()).start();
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            Thread.sleep(200);
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         new Thread(new cliente()).start();
     }
     
     public static void main(String[] args) throws IOException, FileNotFoundException, ClassNotFoundException {
         
         new MainTest();
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            Thread.sleep(400);
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         
 //        for(int i = 0 ; i < 5 ; i++){
 //            System.out.println("Retorno do servidor: "+clientecon.sayAndListenNextResponse("alert:teste de retorno"));
@@ -65,32 +66,31 @@ public class MainTest {
 //            System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 //        }
         
-        clientecon.close();
+//        clientecon.close();
 //        servidor.close();
+        
+
+//        clientecon = new Connection();
+//        clientecon.startAsClient();
+//        clientecon.say("onlyreceive:final");
+//        try {
+//            Thread.sleep(400);
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        clientecon.close();
 //        
-        clientecon = new Connection();
-        clientecon.startAsClient();
-//        
-        clientecon.say("onlyreceive:final");
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        clientecon.close();
         
+//        servidor.close();
         
-        
-        servidor.close();
-        
-        try {
-            Thread.sleep(4000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
-        clientecon = new Connection();
-        clientecon.startAsClient();
+//        try {
+//            Thread.sleep(4000);
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+//        clientecon = new Connection();
+//        clientecon.startAsClient();
     }
     
     
@@ -104,6 +104,7 @@ public class MainTest {
             } catch (IOException ex) {
                 Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
             }
+            
         }
         
     }

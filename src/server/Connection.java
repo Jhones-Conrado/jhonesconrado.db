@@ -98,30 +98,37 @@ public class Connection {
      */
     public void startAsClient(String ip, int port, String hash) throws IOException{
         if(!initialized){
-            this.socket = new Socket(ip, port);
-            this.reader = new Scanner(socket.getInputStream());
-            this.writer = new PrintWriter(socket.getOutputStream());
-            start_time = System.nanoTime();
-            
-            if(socket.isConnected()){
-                say(hash);
-                if(reader.hasNextLine()){
-                    String con = reader.nextLine();
-                    if(con.equals("connected")){
-                        initialized = true;
-                        ConnectionType = AS_CLIENT;
-                        ConnectionManager.addClientConnection(this);
-                        System.out.println("Connected as client to IP server: "+getIp());
-                        new Thread(new Lister()).start();
+            try {
+                this.socket = new Socket(ip, port);
+            } catch (IOException e) {
+                System.out.println("Error to connect to server.");
+                System.out.println(e);
+            }
+            if(this.socket != null){
+                this.reader = new Scanner(socket.getInputStream());
+                this.writer = new PrintWriter(socket.getOutputStream());
+                start_time = System.nanoTime();
+
+                if(socket.isConnected()){
+                    say(hash);
+                    if(reader.hasNextLine()){
+                        String con = reader.nextLine();
+                        if(con.equals("connected")){
+                            initialized = true;
+                            ConnectionType = AS_CLIENT;
+                            ConnectionManager.addClientConnection(this);
+                            System.out.println("Connected as client to IP server: "+getIp());
+                            new Thread(new Lister()).start();
+                        } else {
+                            System.out.println("Connection refused");
+                            close();
+                        }
                     } else {
-                        System.out.println("Connection refused");
                         close();
                     }
                 } else {
-                    close();
+                    System.out.println("Not connected.");
                 }
-            } else {
-                System.out.println("Not connected.");
             }
         }
     }

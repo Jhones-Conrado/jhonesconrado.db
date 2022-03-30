@@ -39,6 +39,8 @@ public class Server {
     public boolean close() throws IOException{
         config.Config.serverShutDown = true;
         System.out.println("Closing server.");
+        tr.interrupt();
+        serverSocket.close();
         return true;
     }
     

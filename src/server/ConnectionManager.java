@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
  */
 public class ConnectionManager {
     
+    private static Object lock = new Object();
+    
     /**
      * Map of connected clients where you are the server.
      */
@@ -41,9 +43,11 @@ public class ConnectionManager {
      * Sends a message for all servers connected.
      * @param msg Message to be sent.
      */
-    public void sayToServer(String msg){
-        for(Connection cs : clientConnections.values()){
-            cs.say(msg);
+    public static void sayToServer(String msg){
+        synchronized (lock) {
+            for(Connection cs : clientConnections.values()){
+                cs.say(msg);
+            }
         }
     }
     
@@ -52,17 +56,21 @@ public class ConnectionManager {
      * @param msg Message to be sent.
      * @param ip Server IP that message will be sent.
      */
-    public void sayToServer(String msg, String ip){
-        clientConnections.get(ip).say(msg);
+    public static void sayToServer(String msg, String ip){
+        synchronized (lock) {
+            clientConnections.get(ip).say(msg);
+        }
     }
 
     /**
      * Sends a message for all connected clients.
      * @param msg Message to be sent.
      */
-    public void sayToClient(String msg){
-        for(Connection cs : connections.values()){
-            cs.say(msg);
+    public static void sayToClient(String msg){
+        synchronized (lock) {
+            for(Connection cs : connections.values()){
+                cs.say(msg);
+            }
         }
     }
     
@@ -71,8 +79,10 @@ public class ConnectionManager {
      * @param msg Message to be sent.
      * @param ip Client IP that message will be sent.
      */
-    public void seyToClient(String msg, String ip){
-        connections.get(ip).say(msg);
+    public static void seyToClient(String msg, String ip){
+        synchronized (lock) {
+            connections.get(ip).say(msg);
+        }
     }
 
     /**
@@ -80,7 +90,9 @@ public class ConnectionManager {
      * @param socket 
      */
     public static void addConnection(Connection connection){
-        connections.put(connection.getIp(), connection);
+        synchronized (lock) {
+            connections.put(connection.getIp(), connection);
+        }
     }
     
     /**
@@ -89,10 +101,12 @@ public class ConnectionManager {
      * @return Result of operation.
      */
     public static boolean removeConnection(String ip){
-        if(connections.containsKey(ip)){
-            connections.remove(ip);
+        synchronized (lock) {
+            if(connections.containsKey(ip)){
+                connections.remove(ip);
+            }
+            return false;
         }
-        return false;
     }
     
     /**
@@ -100,7 +114,9 @@ public class ConnectionManager {
      * @param socket 
      */
     public static void addClientConnection(Connection connection){
-        clientConnections.put(connection.getIp(), connection);
+        synchronized (lock) {
+            clientConnections.put(connection.getIp(), connection);
+        }
     }
     
     /**
@@ -109,26 +125,44 @@ public class ConnectionManager {
      * @return Result of operation.
      */
     public static boolean removeClientConnection(String ip){
-        if(clientConnections.containsKey(ip)){
-            clientConnections.remove(ip);
+        synchronized (lock) {
+            if(clientConnections.containsKey(ip)){
+                clientConnections.remove(ip);
+            }
+            return false;
         }
-        return false;
     }
     
     /**
      * Gets a IP list of all connected clients.
      * @return Connected Client IP List.
      */
-    public List<String> getConnectedClients(){
-        return clientConnections.keySet().stream().collect(Collectors.toList());
+    public static List<String> getConnectedClients(){
+        synchronized (lock) {
+            return clientConnections.keySet().stream().collect(Collectors.toList());
+        }
     }
     
     /**
      * Gets a IP list of all connected servers.
      * @return Connected server IP List.
      */
-    public List<String> getConnectedServer(){
-        return connections.keySet().stream().collect(Collectors.toList());
+    public static List<String> getConnectedServer(){
+        synchronized (lock) {
+            return connections.keySet().stream().collect(Collectors.toList());
+        }
+    }
+    
+    public static int getClientCount(){
+        synchronized (lock) {
+            return clientConnections.size();
+        }
+    }
+    
+    public static int getServerCount(){
+        synchronized (lock) {
+            return connections.size();
+        }
     }
     
 }
