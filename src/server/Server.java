@@ -20,23 +20,24 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 /**
- *
+ * Um servidor básico que ficará esperando por novas conexões e criando novas 
+ * Threads para cada nova conexão.
+ * A basic server that will be waiting for new connections and creating new 
+ * Threads for each new connection
  * @author jhonesconrado
  */
 public class Server {
     
     private ServerSocket serverSocket;
+    private Thread tr;
     
     /**
      * Creates a new instance of server.
      */
-    public Server(){
-        
-    }
+    public Server(){}
     
     public boolean close() throws IOException{
         config.Config.serverShutDown = true;
-        serverSocket.close();
         System.out.println("Closing server.");
         return true;
     }
@@ -46,15 +47,26 @@ public class Server {
      * @throws IOException 
      */
     public void start() throws IOException{
-        ServerSocket server = new ServerSocket(config.Config.serverPort);
+        serverSocket = new ServerSocket(config.Config.serverPort);
+        serverSocket.setSoTimeout(100);
+        tr = new Thread(new Observer());
+        tr.start();
         System.out.println("Server initialized at port "+config.Config.serverPort);
-        while(!config.Config.serverShutDown){
-            try {
-                new Connection().startAsServer(server.accept());
-            } catch (IOException e) {
-                System.out.println(e);
+    }
+    
+    private class Observer implements Runnable {
+
+        @Override
+        public void run() {
+            while(!config.Config.serverShutDown){
+                try {
+                    new Connection().startAsServer(serverSocket.accept());
+                } catch (IOException e) {
+                }
             }
+            System.out.println("closed");
         }
+        
     }
     
 }

@@ -16,7 +16,6 @@
  */
 package server;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,16 +84,13 @@ public class ConnectionManager {
     }
     
     /**
-     * Close and remove a connection from IP.
-     * @param ip The connection IP to close and remove.
+     * Remove a connection from IP.
+     * @param ip The connection IP to remove.
      * @return Result of operation.
      */
     public static boolean removeConnection(String ip){
         if(connections.containsKey(ip)){
-            if(connections.get(ip).close()){
-                connections.remove(ip);
-                return true;
-            }
+            connections.remove(ip);
         }
         return false;
     }
@@ -114,10 +110,7 @@ public class ConnectionManager {
      */
     public static boolean removeClientConnection(String ip){
         if(clientConnections.containsKey(ip)){
-            if(clientConnections.get(ip).close()){
-                clientConnections.remove(ip);
-                return true;
-            }
+            clientConnections.remove(ip);
         }
         return false;
     }

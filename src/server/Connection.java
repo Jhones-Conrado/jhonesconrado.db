@@ -102,22 +102,26 @@ public class Connection {
             this.reader = new Scanner(socket.getInputStream());
             this.writer = new PrintWriter(socket.getOutputStream());
             start_time = System.nanoTime();
-
-            say(hash);
-            if(reader.hasNextLine()){
-                String con = reader.nextLine();
-                if(con.equals("connected")){
-                    initialized = true;
-                    ConnectionType = AS_CLIENT;
-                    ConnectionManager.addClientConnection(this);
-                    System.out.println("Connected as client to IP server: "+getIp());
-                    new Thread(new Lister()).start();
+            
+            if(socket.isConnected()){
+                say(hash);
+                if(reader.hasNextLine()){
+                    String con = reader.nextLine();
+                    if(con.equals("connected")){
+                        initialized = true;
+                        ConnectionType = AS_CLIENT;
+                        ConnectionManager.addClientConnection(this);
+                        System.out.println("Connected as client to IP server: "+getIp());
+                        new Thread(new Lister()).start();
+                    } else {
+                        System.out.println("Connection refused");
+                        close();
+                    }
                 } else {
-                    System.out.println("Connection refused");
                     close();
                 }
             } else {
-                close();
+                System.out.println("Not connected.");
             }
         }
     }
@@ -151,24 +155,48 @@ public class Connection {
         }
     }
     
+    /**
+     * Gets a connection type, if this is server or client.
+     * @return Connection type.
+     */
+    public int getConnectionType(){
+        return ConnectionType;
+    }
+    
+    /**
+     * Thread safe method to put a new response.
+     * @param msg Response
+     */
     private void setResponse(String msg){
         synchronized (lock) {
             nextResponse = msg;
         }
     }
     
+    /**
+     * Thread safe method to set the next message is response.
+     * @param value 
+     */
     private void setIsResponse(boolean value){
         synchronized (lock) {
             isResponse = value;
         }
     }
     
-    private boolean getIsResponse(){
+    /**
+     * Thread safe method to verify if the actual message received is an response.
+     * @return 
+     */
+    private boolean isResponse(){
         synchronized (lock) {
             return isResponse;
         }
     }
     
+    /**
+     * Thread safe method to 
+     * @return 
+     */
     private String getNextResponse(){
         synchronized (lock) {
             return nextResponse;
@@ -177,7 +205,7 @@ public class Connection {
     
     /**
      * Envia uma mensagem.
-     * Send a message.
+     * Sends a message.
      * @param msg 
      */
     public synchronized void say(String msg){
@@ -188,7 +216,7 @@ public class Connection {
             } catch (Exception e) {
                 System.out.println(e);
             }
-            if(getIsResponse()){
+            if(isResponse()){
                 setIsResponse(false);
                 toSend = "nextResponse:"+toSend;
             }
@@ -218,9 +246,9 @@ public class Connection {
      * @return The result of the socket close operation.
      */
     public boolean close(){
-        reader.close();
-        writer.close();
         try {
+            writer.close();
+            reader.close();
             socket.close();
             if(ConnectionType == AS_CLIENT){
                 return ConnectionManager.removeClientConnection(getIp());
@@ -271,8 +299,20 @@ public class Connection {
                     InterpreterMemory.interpreter(msg);
                 }
             }
-            close();
-            System.out.println("The client connection at IP: "+getIp()+" was closed.");
+            try {
+                close();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            
+            String t = null;
+            if(ConnectionType == AS_CLIENT){
+                t = "client";
+            } else if (ConnectionType == AS_SERVER){
+                t = "server";
+            }
+            
+            System.out.println("The "+t+" connection at IP: "+getIp()+" was closed. ");
         }
         
     }
