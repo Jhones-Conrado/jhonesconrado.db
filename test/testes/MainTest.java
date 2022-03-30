@@ -17,13 +17,15 @@
 package testes;
 
 import core.interpreters.Alerta;
+import core.interpreters.Cloner;
 import core.interpreters.OnlyReceive;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import server.Connection;
-import server.ConnectionManager;
 import server.Server;
 
 /**
@@ -38,59 +40,59 @@ public class MainTest {
     public MainTest() {
         new Alerta();
         new OnlyReceive();
+        new Cloner();
         
         new Thread(new servidor()).start();
-//        try {
-//            Thread.sleep(200);
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-//        }
         new Thread(new cliente()).start();
     }
     
     public static void main(String[] args) throws IOException, FileNotFoundException, ClassNotFoundException {
         
         new MainTest();
-//        try {
-//            Thread.sleep(400);
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-//        }
         
-//        for(int i = 0 ; i < 5 ; i++){
-//            System.out.println("Retorno do servidor: "+clientecon.sayAndListenNextResponse("alert:teste de retorno"));
-//            clientecon.say("onlyreceive:primeira mensagem enviada");
-//            clientecon.say("onlyreceive:segunda mensagem para confirmar");
-//            System.out.println("Retorno do servidor: "+clientecon.sayAndListenNextResponse("alert:teste de encerramento"));
-//            System.out.println("Retorno do servidor: "+clientecon.sayAndListenNextResponse("alert:teste de encerramento terceiro"));
-//            System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
-//        }
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
-//        clientecon.close();
-//        servidor.close();
+        File f = new File("db/pass");
+        FileInputStream in = new FileInputStream(f);
         
-
-//        clientecon = new Connection();
-//        clientecon.startAsClient();
-//        clientecon.say("onlyreceive:final");
-//        try {
-//            Thread.sleep(400);
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        clientecon.close();
-//        
+        clientecon.say("onlyreceive:mensagem pre arquivo");
         
-//        servidor.close();
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
-//        try {
-//            Thread.sleep(4000);
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
-//        clientecon = new Connection();
-//        clientecon.startAsClient();
+        clientecon.say("clone:", in.readAllBytes());
+        
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        clientecon.say("onlyreceive:mensagem pós arquivo");
+        
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        clientecon.close();
+        
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        servidor.close();
+        
     }
     
     

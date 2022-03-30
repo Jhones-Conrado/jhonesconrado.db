@@ -60,12 +60,20 @@ public class InterpreterMemory {
     /**
      * Interpreta uma mensagem e retorna a String do resultado.
      * Interprete a message and return a String of result.
-     * @param key Interpreter key.
-     * @param msg Message to be analised.
+     * @param msg Interpreter key.
+     * @param bytes Byte array.
      * @return Result of the interpretation.
      */
-    public static String interpreter(String key, String msg){
-        return interpreters.get(key).interpret(msg);
+    public static String interpreter(String msg, byte[] bytes){
+        if(msg.contains(":")){
+            int index = msg.indexOf(":");
+            String key = msg.substring(0, index+1);
+            if(interpreters.containsKey(msg)){
+                return interpreters.get(msg).interpret(msg, bytes);
+            }
+        }
+        return "No key found in message.";
+        
     }
     
     /**
@@ -77,15 +85,6 @@ public class InterpreterMemory {
      * @return 
      */
     public static String interpreter(String msg){
-        if(msg.contains(":")){
-            int index = msg.indexOf(":");
-            String key = msg.substring(0, index+1);
-            if(interpreters.containsKey(key)){
-                return interpreters.get(key).interpret(msg);
-            } else {
-                return "No interpreter found.";
-            }
-        }
-        return "No key found in message.";
+        return interpreter(msg, null);
     }
 }

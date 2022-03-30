@@ -30,8 +30,12 @@ public abstract class DefaultInterpreter {
     }
     
     public String interpret(String msg){
+        return interpret(msg, null);
+    }
+    
+    public String interpret(String msg, byte[] bytes){
         if(msg.startsWith(key)){
-            String t = onInterpret(msg.substring(key.length()));
+            String t = onInterpret(msg, bytes);
             if(t != null){
                 return t;
             }
@@ -40,6 +44,6 @@ public abstract class DefaultInterpreter {
         return null;
     }
     
-    protected abstract String onInterpret(String msg);
+    protected abstract String onInterpret(String msg, byte[] bytes);
     
 }

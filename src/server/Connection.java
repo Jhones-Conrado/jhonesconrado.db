@@ -16,6 +16,7 @@
  */
 package server;
 
+import core.interpreters.ByteFileManager;
 import core.interpreters.InterpreterMemory;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -38,6 +39,7 @@ public class Connection {
     private Socket socket;
     private Scanner reader;
     private PrintWriter writer;
+    private ByteFileManager bytesReader;
     private long start_time;
     
     private String nextResponse = null;
@@ -107,6 +109,7 @@ public class Connection {
             if(this.socket != null){
                 this.reader = new Scanner(socket.getInputStream());
                 this.writer = new PrintWriter(socket.getOutputStream());
+                bytesReader = new ByteFileManager(socket);
                 start_time = System.nanoTime();
 
                 if(socket.isConnected()){
@@ -144,6 +147,7 @@ public class Connection {
         this.socket = socket;
         this.reader = new Scanner(socket.getInputStream());
         this.writer = new PrintWriter(socket.getOutputStream());
+        bytesReader = new ByteFileManager(socket);
         start_time = System.nanoTime();
         
         if(reader.hasNextLine()){
@@ -232,6 +236,11 @@ public class Connection {
         }
     }
     
+    public synchronized void say(String key, byte[] bytes) throws IOException{
+        say("file:"+key);
+        bytesReader.send(bytes);
+    }
+    
     /**
      * Envia uma mensagem e fica aguardando a resposta.
      * Sends a message and return a response for this message.
@@ -302,6 +311,12 @@ public class Connection {
                 } else if(msg.startsWith("requestResponse:")){
                     setIsResponse(true);
                     say(InterpreterMemory.interpreter(msg.substring("requestResponse:".length())));
+                } else if(msg.startsWith("file:")){
+                    try {
+                        InterpreterMemory.interpreter(msg.substring("file:".length()), bytesReader.read());
+                    } catch (IOException ex) {
+                        Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 } else {
                     InterpreterMemory.interpreter(msg);
                 }
