@@ -38,7 +38,7 @@ public class Server {
     public Server(){}
     
     public boolean close() throws IOException{
-        while(InterpreterMemory.canClose.get() > 0){}
+//        while(InterpreterMemory.canClose.get() > 0){}
         config.Config.serverShutDown = true;
         System.out.println("Closing server.");
         tr.interrupt();
