@@ -35,7 +35,7 @@ public abstract class DefaultInterpreter {
     
     public String interpret(String msg, byte[] bytes){
         if(msg.startsWith(key)){
-            String t = onInterpret(msg, bytes);
+            String t = onInterpret(msg.substring(key.length()), bytes);
             if(t != null){
                 return t;
             }

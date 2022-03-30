@@ -18,10 +18,13 @@ package server;
 
 import core.interpreters.ByteFileManager;
 import core.interpreters.InterpreterMemory;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +38,7 @@ import java.util.logging.Logger;
 public class Connection {
     
     private final Object lock = new Object();
+    private AtomicInteger canClose = new AtomicInteger(0);
     
     private Socket socket;
     private Scanner reader;
@@ -220,25 +224,66 @@ public class Connection {
      * @param msg 
      */
     public synchronized void say(String msg){
-        if(!msg.equals("") && msg != null){
-            String toSend = msg;
-            try {
-                toSend = toSend.replaceAll("\n", ";;;");
-            } catch (Exception e) {
-                System.out.println(e);
+        synchronized (lock) {
+            canClose.addAndGet(1);
+            InterpreterMemory.canClose.addAndGet(1);
+            if(!msg.equals("") && msg != null){
+                String toSend = msg;
+                try {
+                    toSend = toSend.replaceAll("\n", ";;;");
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+                if(isResponse()){
+                    setIsResponse(false);
+                    toSend = "nextResponse:"+toSend;
+                }
+                writer.println(toSend);
+                writer.flush();
             }
-            if(isResponse()){
-                setIsResponse(false);
-                toSend = "nextResponse:"+toSend;
-            }
-            writer.println(toSend);
-            writer.flush();
+            canClose.addAndGet(-1);
+            InterpreterMemory.canClose.addAndGet(-1);
         }
     }
     
-    public synchronized void say(String key, byte[] bytes) throws IOException{
-        say("file:"+key);
-        bytesReader.send(bytes);
+    /**
+     * Envia uma mensagem seguida de  um array de bytes.
+     * Sends a message followed by an array of bytes.
+     * @param msg Message to be sent.
+     * @param bytes Byte array to be sent.
+     * @throws IOException 
+     */
+    public synchronized void say(String msg, byte[] bytes) throws IOException{
+        say("file:"+String.valueOf(bytes.length)+":"+msg);
+        synchronized (lock) {
+            canClose.addAndGet(1);
+            InterpreterMemory.canClose.addAndGet(1);
+            bytesReader.send(bytes);
+            canClose.addAndGet(-1);
+            InterpreterMemory.canClose.addAndGet(-1);
+        }
+    }
+    
+    /**
+     * Envia uma mensagem seguida de um arquivo.
+     * Sends a message followed by an file.
+     * @param msg Message to be sent.
+     * @param file File to be sent.
+     * @throws IOException 
+     */
+    public synchronized void say(String msg, File file) throws IOException{
+        if(file.exists()){
+            FileInputStream fileIn = new FileInputStream(file);
+            byte[] bytes = fileIn.readAllBytes();
+            say("file:"+String.valueOf(bytes.length)+":"+msg);
+            synchronized (lock) {
+                canClose.addAndGet(1);
+                InterpreterMemory.canClose.addAndGet(1);
+                bytesReader.send(bytes);
+                canClose.addAndGet(-1);
+                InterpreterMemory.canClose.addAndGet(-1);
+            }
+        }
     }
     
     /**
@@ -262,6 +307,7 @@ public class Connection {
      * @return The result of the socket close operation.
      */
     public boolean close(){
+        while(canClose.get() > 0){}
         try {
             writer.close();
             reader.close();
@@ -313,7 +359,10 @@ public class Connection {
                     say(InterpreterMemory.interpreter(msg.substring("requestResponse:".length())));
                 } else if(msg.startsWith("file:")){
                     try {
-                        InterpreterMemory.interpreter(msg.substring("file:".length()), bytesReader.read());
+                        String temp = msg.substring("file:".length());
+                        int index = temp.indexOf(":");
+                        long size = Long.valueOf(temp.substring(0, index));
+                        InterpreterMemory.interpreter(temp.substring(index+1), bytesReader.read(size));
                     } catch (IOException ex) {
                         Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
                     }

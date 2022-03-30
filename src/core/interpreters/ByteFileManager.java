@@ -51,14 +51,15 @@ public class ByteFileManager {
      * @return Byte array received.
      * @throws IOException 
      */
-    public byte[] read() throws IOException{
+    public byte[] read(long length) throws IOException{
+        InterpreterMemory.canClose.addAndGet(1);
         DataInputStream ins = new DataInputStream(new BufferedInputStream(in));
         
         //Reads all bytes and put it on a list.
         List<Byte> bytes = new ArrayList<>();
         byte b = -1;
-        while((b = ins.readByte()) >= 0){
-            bytes.add(b);
+        for(long i = 0 ; i < length ; i++){
+            bytes.add((byte)ins.read());
         }
         
         //Convert a list<byte> to a byte array.
@@ -66,7 +67,8 @@ public class ByteFileManager {
         for(int i = 0 ; i < bytes.size() ; i++){
             received[i] = bytes.get(i);
         }
-        
+        System.out.println("Received: "+received.length);
+        InterpreterMemory.canClose.addAndGet(-1);
         return received;
     }
     
@@ -79,10 +81,13 @@ public class ByteFileManager {
      * @throws IOException 
      */
     public byte[] send(byte[] bytes) throws FileNotFoundException, IOException {
+        InterpreterMemory.canClose.addAndGet(1);
+        System.out.println("Sendind: "+bytes.length);
         DataOutputStream fileOut = new DataOutputStream(new BufferedOutputStream(this.out));
         fileOut.write(bytes);
-        fileOut.write(-1);
+        fileOut.write((byte)-128);
         fileOut.flush();
+        InterpreterMemory.canClose.addAndGet(-1);
         return bytes;
     }
     

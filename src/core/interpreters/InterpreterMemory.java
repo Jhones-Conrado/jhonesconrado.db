@@ -18,6 +18,7 @@ package core.interpreters;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Armazena todos os interpretadores de comunicação, recebendo mensagens e 
@@ -28,6 +29,7 @@ import java.util.Map;
  */
 public class InterpreterMemory {
     private static final Map<String, DefaultInterpreter> interpreters = new HashMap<>();
+    public static AtomicInteger canClose = new AtomicInteger(0);
     
     /**
      * Adiciona um interpretador.
@@ -68,8 +70,8 @@ public class InterpreterMemory {
         if(msg.contains(":")){
             int index = msg.indexOf(":");
             String key = msg.substring(0, index+1);
-            if(interpreters.containsKey(msg)){
-                return interpreters.get(msg).interpret(msg, bytes);
+            if(interpreters.containsKey(key)){
+                return interpreters.get(key).interpret(msg, bytes);
             }
         }
         return "No key found in message.";
