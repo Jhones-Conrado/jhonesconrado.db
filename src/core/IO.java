@@ -16,6 +16,7 @@
  */
 package core;
 
+import core.filter.Filter;
 import com.google.gson.Gson;
 import config.Config;
 import interfaces.Entity;

@@ -16,7 +16,7 @@
  */
 package interfaces;
 
-import core.Filter;
+import core.filter.Filter;
 import core.IO;
 import core.IdManager;
 import java.io.FileNotFoundException;

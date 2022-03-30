@@ -16,11 +16,14 @@
  */
 package testes;
 
-import core.JsonUtils;
+import core.interpreters.Alerta;
+import core.interpreters.OnlyReceive;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import server.Connection;
+import server.Server;
 
 /**
  *
@@ -28,13 +31,61 @@ import java.util.Map;
  */
 public class MainTest {
     
-    public static void main(String[] args) throws IOException, FileNotFoundException, ClassNotFoundException {
+    static Connection clientecon;
+
+    public MainTest() {
+        new Alerta();
+        new OnlyReceive();
         
-        Map<String, String> m = new HashMap<>();
-        m.put("nome", "jhones");
-        m.put("idade", "26");
-        
-        System.out.println(JsonUtils.mapToJson(m));
+        new Thread(new servidor()).start();
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        new Thread(new cliente()).start();
     }
     
+    public static void main(String[] args) throws IOException, FileNotFoundException, ClassNotFoundException {
+        
+        new MainTest();
+        try {
+            Thread.sleep(500);
+            clientecon.say("onlyreceive:primeira mensagem enviada");
+            Thread.sleep(500);
+            System.out.println("Retorno do servidor: "+clientecon.sayAndListenNextResponse("alert:teste de retorno"));
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    
+    
+    private class cliente implements Runnable {
+
+        @Override
+        public void run() {
+            clientecon = new Connection();
+            try {
+                clientecon.startAsClient();
+            } catch (IOException ex) {
+                Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+    }
+    
+    private class servidor implements Runnable {
+
+        @Override
+        public void run() {
+            Server servidor = new Server();
+            try {
+                servidor.start();
+            } catch (IOException ex) {
+                Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+    }
 }
