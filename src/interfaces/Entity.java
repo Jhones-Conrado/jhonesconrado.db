@@ -26,7 +26,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * Uma interface com todos os métodos mais básicos de uma entidade, permite 
+ * salvar, carregar, deletar e filtrar.
+ * An interface with all the most basic methods of an entity, allows saving, 
+ * loading, deleting and filtering.
  * @author jhonesconrado
  */
 public interface Entity extends Serializable{
@@ -38,6 +41,7 @@ public interface Entity extends Serializable{
     
     /**
      * Verifica se o ID é igual a -1l, somente se for, então um novo ID será aceito.
+     * Checks if the ID is equal to -1l, only if it is, then a new ID will be accepted.
      * @param id Novo ID.
      */
     default void setId(long id){
@@ -48,12 +52,14 @@ public interface Entity extends Serializable{
     
     /**
      * Deve ser implementado para atribuir o valor do ID a alguma variável.
+     * It must be implemented to assign the ID value to some variable.
      * @param id 
      */
     void onSetId(long id);
     
     /**
      * Salva a entidade no banco de dados.
+     * Saves the entity to Database.
      * @throws IOException
      * @throws FileNotFoundException
      * @throws ClassNotFoundException 
@@ -67,6 +73,7 @@ public interface Entity extends Serializable{
     
     /**
      * Carrega uma entidade, do banco de dados, a partir do seu ID.
+     * Loads an entity from database by ID.
      * @param <T>
      * @param id
      * @return
@@ -78,6 +85,7 @@ public interface Entity extends Serializable{
     
     /**
      * Carrega todas as entidades salvas desse tipo.
+     * Loads all entities of this type.
      * @param <T>
      * @return
      * @throws IOException 
@@ -88,6 +96,7 @@ public interface Entity extends Serializable{
     
     /**
      * Carrega todas as entidades salvas desse tipo que contenham determinado trecho de informação.
+     * Loads all saved entities of this type that contain a certain piece of information.
      * @param <T>
      * @param findKey Trecho de informação que deverá ser usado como base de filtro.
      * @return
@@ -99,6 +108,7 @@ public interface Entity extends Serializable{
     
     /**
      * Carrega todas as entidades que passarem em um filtro informado.
+     * Loads all entities that pass a given filter.
      * @param <T>
      * @param filter Mapa de "chave" "valor" que deverá ser usado como filtro.
      * @param convergence O valor deve coincidir inteiramente ou apenas em parte? true para inteiro, false para parte.
@@ -111,12 +121,21 @@ public interface Entity extends Serializable{
         return (List<T>) IO.loadAll(this.getClass(), filter, convergence, allfilters);
     }
     
+    /**
+     * Carrega todas as entidades que passarem em um filtro informado.
+     * Loads all entities that pass a given filter.
+     * @param <T>
+     * @param filter
+     * @return
+     * @throws IOException 
+     */
     default <T extends Entity> List<T> loadAll(Filter filter) throws IOException{
         return (List<T>) IO.loadAll(this.getClass(), filter);
     }
     
     /**
      * Deleta a entidade.
+     * Delete this entity.
      * @param <T> 
      */
     default <T extends Entity> void delete(){
@@ -125,6 +144,7 @@ public interface Entity extends Serializable{
     
     /**
      * Deleta TODAS as entidades desse tipo!
+     * Delete all entities of this type.
      * @param <T> 
      */
     default <T extends Entity> void deleteAll(){
@@ -133,6 +153,7 @@ public interface Entity extends Serializable{
     
     /**
      * Aplica um filtro nas entidades e depois deleta todas que tenham passado no filtro.
+     * Apply a filter to entities and then delete all that passed the filter.
      * @param <T>
      * @param filter Mapa de "chave" "valor" que deverá ser usado como filtro.
      * @param convergence O valor deve coincidir inteiramente ou apenas em parte? true para inteiro, false para parte.
@@ -146,6 +167,7 @@ public interface Entity extends Serializable{
     
     /**
      * Aplica um filtro nas entidades e depois deleta todas que tenham passado no filtro.
+     * Apply a filter to entities and then delete all that passed the filter.
      * @param <T>
      * @param filter Filtro a ser aplicado na busca por entidades a serem deletadas.
      * @throws IOException 

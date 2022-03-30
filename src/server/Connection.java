@@ -16,7 +16,6 @@
  */
 package server;
 
-import core.interpreters.DefaultInterpreter;
 import core.interpreters.InterpreterMemory;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -26,10 +25,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Uma conexão que pode ser inicializada como servidor ou como cliente.
+ * Permite a comunicação por envio e recebimento de Strings.
+ * A connection that can be initialized as a server or as a client.
+ * Allows communication by sending and receiving Strings.
  * @author jhonesconrado
  */
 public class Connection {
+    
+    private final Object lock = new Object();
     
     private Socket socket;
     private Scanner reader;
@@ -46,25 +50,52 @@ public class Connection {
     private int ConnectionType;
     
     /**
-     * 
+     * Cria uma nova instância de conexão.
+     * Creates a new instance of connection.
      */
     public Connection() {
         isResponse = false;
         initialized = false;
     }
     
+    /**
+     * Inicializa a conexão como um cliente.
+     * Starts a connection as client.
+     * @throws IOException 
+     */
     public void startAsClient() throws IOException{
         starAsClient(config.Config.serverIP);
     }
     
+    /**
+     * Inicializa a conexão como um cliente.
+     * Starts a connection as client.
+     * @param ip Server IP.
+     * @throws IOException 
+     */
     public void starAsClient(String ip) throws IOException{
         startAsClient(ip, config.Config.serverPort);
     }
     
+    /**
+     * Inicializa a conexão como um cliente.
+     * Starts a connection as client.
+     * @param ip Server IP.
+     * @param port Server port.
+     * @throws IOException 
+     */
     public void startAsClient(String ip, int port) throws IOException{
         startAsClient(ip, port, config.Config.clientPass);
     }
     
+    /**
+     * Inicializa a conexão como um cliente.
+     * Starts a connection as client.
+     * @param ip Server IP.
+     * @param port Server port.
+     * @param hash Hash to authenticate.
+     * @throws IOException 
+     */
     public void startAsClient(String ip, int port, String hash) throws IOException{
         if(!initialized){
             this.socket = new Socket(ip, port);
@@ -79,7 +110,7 @@ public class Connection {
                     initialized = true;
                     ConnectionType = AS_CLIENT;
                     ConnectionManager.addClientConnection(this);
-                    System.out.println("Conectado como cliente ao servidor: "+getIp());
+                    System.out.println("Connected as client to IP server: "+getIp());
                     new Thread(new Lister()).start();
                 } else {
                     System.out.println("Connection refused");
@@ -91,6 +122,13 @@ public class Connection {
         }
     }
     
+    /**
+     * Inicia a conexão como um servidor, utilizando os valores padrões de porta
+     * e hash.
+     * Start the connection as a server, using the default port values and hash.
+     * @param socket
+     * @throws IOException 
+     */
     public void startAsServer(Socket socket) throws IOException{
         this.socket = socket;
         this.reader = new Scanner(socket.getInputStream());
@@ -105,7 +143,7 @@ public class Connection {
                 ConnectionManager.addConnection(this);
                 new Thread(new Lister()).start();
                 say("connected");
-                System.out.println("Nova conexão com o cliente IP: "+getIp());
+                System.out.println("New connection with client: "+getIp());
             } else {
                 say(config.Config.msgToRefused);
                 close();
@@ -113,12 +151,36 @@ public class Connection {
         }
     }
     
+    private void setResponse(String msg){
+        synchronized (lock) {
+            nextResponse = msg;
+        }
+    }
+    
+    private void setIsResponse(boolean value){
+        synchronized (lock) {
+            isResponse = value;
+        }
+    }
+    
+    private boolean getIsResponse(){
+        synchronized (lock) {
+            return isResponse;
+        }
+    }
+    
+    private String getNextResponse(){
+        synchronized (lock) {
+            return nextResponse;
+        }
+    }
     
     /**
-     * Send a message to client.
+     * Envia uma mensagem.
+     * Send a message.
      * @param msg 
      */
-    public void say(String msg){
+    public synchronized void say(String msg){
         if(!msg.equals("") && msg != null){
             String toSend = msg;
             try {
@@ -126,8 +188,8 @@ public class Connection {
             } catch (Exception e) {
                 System.out.println(e);
             }
-            if(isResponse){
-                isResponse = false;
+            if(getIsResponse()){
+                setIsResponse(false);
                 toSend = "nextResponse:"+toSend;
             }
             writer.println(toSend);
@@ -136,20 +198,22 @@ public class Connection {
     }
     
     /**
-     * Sends a message to server and return a response for this message.
+     * Envia uma mensagem e fica aguardando a resposta.
+     * Sends a message and return a response for this message.
      * @param msg Message to be sent.
      * @return Message received from client.
      */
     public String sayAndListenNextResponse(String msg){
-        this.nextResponse = null;
+        setResponse(null);
         say("requestResponse:"+msg);
-        while(nextResponse == null){
+        while(getNextResponse() == null){
             
         }
-        return nextResponse;
+        return getNextResponse();
     }
     
     /**
+     * Tenta encerrar a conexão.
      * Try to close the connection.
      * @return The result of the socket close operation.
      */
@@ -170,7 +234,7 @@ public class Connection {
     }
     
     /**
-     * @return The connection client IP as String.
+     * @return The connection IP as String.
      */
     public String getIp(){
         return socket.getInetAddress().getHostAddress();
@@ -184,6 +248,7 @@ public class Connection {
     }
     
     /**
+     * Isso ficará ouvindo as mensagens da conexão.
      * This will keep listening to the messages from the server.
      */
     private class Lister implements Runnable{
@@ -198,9 +263,9 @@ public class Connection {
                     System.out.println(e);
                 }
                 if(msg.startsWith("nextResponse:")){
-                    nextResponse = msg.substring("nextResponse:".length());
+                    setResponse(msg.substring("nextResponse:".length()));
                 } else if(msg.startsWith("requestResponse:")){
-                    isResponse = true;
+                    setIsResponse(true);
                     say(InterpreterMemory.interpreter(msg.substring("requestResponse:".length())));
                 } else {
                     InterpreterMemory.interpreter(msg);

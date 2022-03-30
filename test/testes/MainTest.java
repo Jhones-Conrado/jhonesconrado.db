@@ -32,7 +32,8 @@ import server.Server;
 public class MainTest {
     
     static Connection clientecon;
-
+    static Server servidor;
+    
     public MainTest() {
         new Alerta();
         new OnlyReceive();
@@ -50,14 +51,23 @@ public class MainTest {
         
         new MainTest();
         try {
-            Thread.sleep(500);
-            clientecon.say("onlyreceive:primeira mensagem enviada");
-            Thread.sleep(500);
-            System.out.println("Retorno do servidor: "+clientecon.sayAndListenNextResponse("alert:teste de retorno"));
+            Thread.sleep(400);
         } catch (InterruptedException ex) {
             Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        for(int i = 0 ; i < 5 ; i++){
+            System.out.println("Retorno do servidor: "+clientecon.sayAndListenNextResponse("alert:teste de retorno"));
+            clientecon.say("onlyreceive:primeira mensagem enviada");
+            clientecon.say("onlyreceive:segunda mensagem para confirmar");
+            System.out.println("Retorno do servidor: "+clientecon.sayAndListenNextResponse("alert:teste de encerramento"));
+            System.out.println("Retorno do servidor: "+clientecon.sayAndListenNextResponse("alert:teste de encerramento terceiro"));
+            System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+        }
+        
+        clientecon.close();
+        System.out.println("aqui");
+        servidor.close();
     }
     
     
@@ -79,7 +89,7 @@ public class MainTest {
 
         @Override
         public void run() {
-            Server servidor = new Server();
+            servidor = new Server();
             try {
                 servidor.start();
             } catch (IOException ex) {

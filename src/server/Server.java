@@ -34,6 +34,13 @@ public class Server {
         
     }
     
+    public boolean close() throws IOException{
+        config.Config.serverShutDown = true;
+        serverSocket.close();
+        System.out.println("Closing server.");
+        return true;
+    }
+    
     /**
      * Starts this server.
      * @throws IOException 

@@ -20,13 +20,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Armazena todos os interpretadores de comunicação, recebendo mensagens e 
+ * direcionando-as para os seus devidos interpretadores.
+ * It stores all the communication interpreters, receiving messages and 
+ * directing them to their proper interpreters.
  * @author jhonesconrado
  */
 public class InterpreterMemory {
     private static final Map<String, DefaultInterpreter> interpreters = new HashMap<>();
     
     /**
+     * Adiciona um interpretador.
      * Add a new interpreter.
      * @param interpreter 
      */
@@ -35,6 +39,7 @@ public class InterpreterMemory {
     }
     
     /**
+     * Remove um interpretador.
      * Remove a interpreter.
      * @param key 
      */
@@ -43,7 +48,8 @@ public class InterpreterMemory {
     }
     
     /**
-     * Gets a interpreter.
+     * Retorna um interpretador a partir de sua chave.
+     * Gets a interpreter from key.
      * @param key Interpreter key.
      * @return A Interpreter.
      */
@@ -52,6 +58,7 @@ public class InterpreterMemory {
     }
     
     /**
+     * Interpreta uma mensagem e retorna a String do resultado.
      * Interprete a message and return a String of result.
      * @param key Interpreter key.
      * @param msg Message to be analised.
@@ -61,6 +68,14 @@ public class InterpreterMemory {
         return interpreters.get(key).interpret(msg);
     }
     
+    /**
+     * Identifica automaticamente o interpretador e direciona a mensagem, 
+     * retornando a resposta.
+     * Automatically identifies the interpreter and routes the message, 
+     * returning the response.
+     * @param msg
+     * @return 
+     */
     public static String interpreter(String msg){
         if(msg.contains(":")){
             int index = msg.indexOf(":");

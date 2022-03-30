@@ -19,18 +19,21 @@ package preconfig;
 import interfaces.Entity;
 
 /**
- * A simple pre implemented entity to facilitate your job and to know how to do
- * a new entity implementation.
  * Uma simples entidade pre implementada para facilitar o seu trabalho e para
  * você saber como implementar uma entidade.
+ * A simple pre implemented entity to facilitate your job and to know how to do
+ * a new entity implementation.
  * @author jhonesconrado
  */
 public class PreEntity implements Entity{
     
+    /**
+     * The ID of entity.
+     */
     private long id = -1l;
     
     /**
-     * @return The ID number os this entity.
+     * @return The ID number of this entity.
      */
     @Override
     public long getId() {
