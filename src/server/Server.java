@@ -37,8 +37,13 @@ public class Server {
      */
     public Server(){}
     
+    /**
+     * Encerra o servidor, impedindo novas conexões. As conexões já feitas não
+     * serão fechadas.
+     * @return
+     * @throws IOException 
+     */
     public boolean close() throws IOException{
-//        while(InterpreterMemory.canClose.get() > 0){}
         config.Config.serverShutDown = true;
         System.out.println("Closing server.");
         tr.interrupt();

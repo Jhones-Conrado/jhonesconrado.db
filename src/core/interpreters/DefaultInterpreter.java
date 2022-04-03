@@ -29,11 +29,11 @@ public abstract class DefaultInterpreter {
         InterpreterMemory.addInterpreter(this);
     }
     
-    public String interpret(String msg){
+    public synchronized String interpret(String msg){
         return interpret(msg, null);
     }
     
-    public String interpret(String msg, byte[] bytes){
+    public synchronized String interpret(String msg, byte[] bytes){
         if(msg.startsWith(key)){
             String t = onInterpret(msg.substring(key.length()), bytes);
             if(t != null){

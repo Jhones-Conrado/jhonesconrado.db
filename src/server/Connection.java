@@ -16,13 +16,14 @@
  */
 package server;
 
-import core.interpreters.ByteFileManager;
 import core.interpreters.InterpreterMemory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -40,10 +41,11 @@ public class Connection {
     private final Object lock = new Object();
     private AtomicInteger canClose = new AtomicInteger(0);
     
+    private List<String> toSend;
+    
     private Socket socket;
     private Scanner reader;
     private PrintWriter writer;
-    private ByteFileManager bytesReader;
     private long start_time;
     
     private String nextResponse = null;
@@ -62,6 +64,7 @@ public class Connection {
     public Connection() {
         isResponse = false;
         initialized = false;
+        toSend = new ArrayList<>();
     }
     
     /**
@@ -113,7 +116,6 @@ public class Connection {
             if(this.socket != null){
                 this.reader = new Scanner(socket.getInputStream());
                 this.writer = new PrintWriter(socket.getOutputStream());
-                bytesReader = new ByteFileManager(socket);
                 start_time = System.nanoTime();
 
                 if(socket.isConnected()){
@@ -151,7 +153,6 @@ public class Connection {
         this.socket = socket;
         this.reader = new Scanner(socket.getInputStream());
         this.writer = new PrintWriter(socket.getOutputStream());
-        bytesReader = new ByteFileManager(socket);
         start_time = System.nanoTime();
         
         if(reader.hasNextLine()){
@@ -223,10 +224,10 @@ public class Connection {
      * Sends a message.
      * @param msg 
      */
-    public synchronized void say(String msg){
+    public void say(String msg){
         synchronized (lock) {
+            writer.flush();
             canClose.addAndGet(1);
-            InterpreterMemory.canClose.addAndGet(1);
             if(!msg.equals("") && msg != null){
                 String toSend = msg;
                 try {
@@ -242,7 +243,6 @@ public class Connection {
                 writer.flush();
             }
             canClose.addAndGet(-1);
-            InterpreterMemory.canClose.addAndGet(-1);
         }
     }
     
@@ -253,15 +253,9 @@ public class Connection {
      * @param bytes Byte array to be sent.
      * @throws IOException 
      */
-    public synchronized void say(String msg, byte[] bytes) throws IOException{
+    public void say(String msg, byte[] bytes) throws IOException{
         say("file:"+String.valueOf(bytes.length)+":"+msg);
-        synchronized (lock) {
-            canClose.addAndGet(1);
-            InterpreterMemory.canClose.addAndGet(1);
-            bytesReader.send(bytes);
-            canClose.addAndGet(-1);
-            InterpreterMemory.canClose.addAndGet(-1);
-        }
+        sendBytes(bytes);
     }
     
     /**
@@ -271,18 +265,27 @@ public class Connection {
      * @param file File to be sent.
      * @throws IOException 
      */
-    public synchronized void say(String msg, File file) throws IOException{
+    public void say(String msg, File file) throws IOException{
         if(file.exists()){
             FileInputStream fileIn = new FileInputStream(file);
             byte[] bytes = fileIn.readAllBytes();
             say("file:"+String.valueOf(bytes.length)+":"+msg);
-            synchronized (lock) {
-                canClose.addAndGet(1);
-                InterpreterMemory.canClose.addAndGet(1);
-                bytesReader.send(bytes);
-                canClose.addAndGet(-1);
-                InterpreterMemory.canClose.addAndGet(-1);
-            }
+            sendBytes(bytes);
+        } else {
+            System.out.println("File does not exist.");
+        }
+    }
+    
+    /**
+     * Sends a byte array.
+     * @param bytes
+     * @throws IOException 
+     */
+    private void sendBytes(byte[] bytes) throws IOException{
+        synchronized (lock) {
+            canClose.addAndGet(1);
+            say(new String(bytes));
+            canClose.addAndGet(-1);
         }
     }
     
@@ -308,17 +311,19 @@ public class Connection {
      */
     public boolean close(){
         while(canClose.get() > 0){}
-        try {
-            writer.close();
-            reader.close();
-            socket.close();
-            if(ConnectionType == AS_CLIENT){
-                return ConnectionManager.removeClientConnection(getIp());
-            } else if(ConnectionType == AS_SERVER){
-                return ConnectionManager.removeConnection(getIp());
+        synchronized (lock) {
+            try {
+                writer.close();
+                reader.close();
+                socket.close();
+                if(ConnectionType == AS_CLIENT){
+                    return ConnectionManager.removeClientConnection(getIp());
+                } else if(ConnectionType == AS_SERVER){
+                    return ConnectionManager.removeConnection(getIp());
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } catch (IOException ex) {
-            Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
     }
@@ -352,20 +357,18 @@ public class Connection {
                 } catch (Exception e) {
                     System.out.println(e);
                 }
+                
                 if(msg.startsWith("nextResponse:")){
                     setResponse(msg.substring("nextResponse:".length()));
                 } else if(msg.startsWith("requestResponse:")){
                     setIsResponse(true);
                     say(InterpreterMemory.interpreter(msg.substring("requestResponse:".length())));
                 } else if(msg.startsWith("file:")){
-                    try {
-                        String temp = msg.substring("file:".length());
-                        int index = temp.indexOf(":");
-                        long size = Long.valueOf(temp.substring(0, index));
-                        InterpreterMemory.interpreter(temp.substring(index+1), bytesReader.read(size));
-                    } catch (IOException ex) {
-                        Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    String temp = msg.substring("file:".length());
+                    int index = temp.indexOf(":");
+                    int size = Integer.valueOf(temp.substring(0, index));
+                    byte[] arr = reader.nextLine().getBytes();
+                    InterpreterMemory.interpreter(temp.substring(index+1), arr);
                 } else {
                     InterpreterMemory.interpreter(msg);
                 }
@@ -382,7 +385,6 @@ public class Connection {
             } else if (ConnectionType == AS_SERVER){
                 t = "server";
             }
-            
             System.out.println("The "+t+" connection at IP: "+getIp()+" was closed. ");
         }
         

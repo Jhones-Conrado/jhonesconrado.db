@@ -18,7 +18,6 @@ package core.interpreters;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Armazena todos os interpretadores de comunicação, recebendo mensagens e 
@@ -29,7 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class InterpreterMemory {
     private static final Map<String, DefaultInterpreter> interpreters = new HashMap<>();
-    public static AtomicInteger canClose = new AtomicInteger(0);
     
     /**
      * Adiciona um interpretador.

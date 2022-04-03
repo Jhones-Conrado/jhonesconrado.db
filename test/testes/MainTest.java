@@ -59,39 +59,26 @@ public class MainTest {
         File f = new File("db/arquivo");
         FileInputStream in = new FileInputStream(f);
         
+        servidor.close();
+        
         clientecon.say("onlyreceive:mensagem pre arquivo");
         
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        clientecon.say("clone:", f);
         
-        clientecon.say("clone:copiado", in.readAllBytes());
+        in.close();
+//        
+//        f = new File("db/arquivo2");
+//        in = new FileInputStream(f);
+
+//        clientecon.say("onlyreceive:mensagem pós arquivo -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
         
-//        try {
-//            Thread.sleep(400);
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-//        }
+//        clientecon.say("clone:", f);
         
+//        in.close();
+
         clientecon.say("onlyreceive:mensagem pós arquivo");
         
-//        try {
-//            Thread.sleep(400);
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-        
         clientecon.close();
-        
-//        try {
-//            Thread.sleep(400);
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(MainTest.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-        
-        servidor.close();
         
     }
     
