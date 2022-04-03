@@ -22,8 +22,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -40,8 +38,6 @@ public class Connection {
     
     private final Object lock = new Object();
     private AtomicInteger canClose = new AtomicInteger(0);
-    
-    private List<String> toSend;
     
     private Socket socket;
     private Scanner reader;
@@ -64,7 +60,6 @@ public class Connection {
     public Connection() {
         isResponse = false;
         initialized = false;
-        toSend = new ArrayList<>();
     }
     
     /**
@@ -160,7 +155,7 @@ public class Connection {
             if(config.Config.validatePass(pass)){
                 initialized = true;
                 ConnectionType = AS_SERVER;
-                ConnectionManager.addConnection(this);
+                ConnectionManager.addServerConnection(this);
                 new Thread(new Lister()).start();
                 say("connected");
                 System.out.println("New connection with client: "+getIp());
@@ -169,6 +164,30 @@ public class Connection {
                 close();
             }
         }
+    }
+    
+    /**
+     * Tenta encerrar a conexão.
+     * Try to close the connection.
+     * @return The result of the socket close operation.
+     */
+    public boolean close(){
+        while(canClose.get() > 0){}
+        synchronized (lock) {
+            try {
+                writer.close();
+                reader.close();
+                socket.close();
+                if(ConnectionType == AS_CLIENT){
+                    return ConnectionManager.removeClientConnection(getIp());
+                } else if(ConnectionType == AS_SERVER){
+                    return ConnectionManager.removeServerConnection(getIp());
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return false;
     }
     
     /**
@@ -268,9 +287,7 @@ public class Connection {
     public void say(String msg, File file) throws IOException{
         if(file.exists()){
             FileInputStream fileIn = new FileInputStream(file);
-            byte[] bytes = fileIn.readAllBytes();
-            say("file:"+String.valueOf(bytes.length)+":"+msg);
-            sendBytes(bytes);
+            say(msg, fileIn.readAllBytes());
         } else {
             System.out.println("File does not exist.");
         }
@@ -298,34 +315,8 @@ public class Connection {
     public String sayAndListenNextResponse(String msg){
         setResponse(null);
         say("requestResponse:"+msg);
-        while(getNextResponse() == null){
-            
-        }
+        while(getNextResponse() == null){}
         return getNextResponse();
-    }
-    
-    /**
-     * Tenta encerrar a conexão.
-     * Try to close the connection.
-     * @return The result of the socket close operation.
-     */
-    public boolean close(){
-        while(canClose.get() > 0){}
-        synchronized (lock) {
-            try {
-                writer.close();
-                reader.close();
-                socket.close();
-                if(ConnectionType == AS_CLIENT){
-                    return ConnectionManager.removeClientConnection(getIp());
-                } else if(ConnectionType == AS_SERVER){
-                    return ConnectionManager.removeConnection(getIp());
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return false;
     }
     
     /**
@@ -338,8 +329,8 @@ public class Connection {
     /**
      * @return How long has the connection been open in seconds.
      */
-    public long getConnectedTimeInSeconds(){
-        return (long) ((System.nanoTime() - start_time)/1e9);
+    public double getConnectedTimeInSeconds(){
+        return ((System.nanoTime() - start_time)/1e9);
     }
     
     /**
@@ -365,10 +356,8 @@ public class Connection {
                     say(InterpreterMemory.interpreter(msg.substring("requestResponse:".length())));
                 } else if(msg.startsWith("file:")){
                     String temp = msg.substring("file:".length());
-                    int index = temp.indexOf(":");
-                    int size = Integer.valueOf(temp.substring(0, index));
                     byte[] arr = reader.nextLine().getBytes();
-                    InterpreterMemory.interpreter(temp.substring(index+1), arr);
+                    InterpreterMemory.interpreter(temp.substring(temp.indexOf(":")+1), arr);
                 } else {
                     InterpreterMemory.interpreter(msg);
                 }

@@ -16,13 +16,16 @@
  */
 package server;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- *
+ * Gestor de conexões que armazena todas as conexões que estão abertas.
+ * Connection manager that stores all connections that are open.
  * @author jhonesconrado
  */
 public class ConnectionManager {
@@ -32,7 +35,7 @@ public class ConnectionManager {
     /**
      * Map of connected clients where you are the server.
      */
-    private static final Map<String, Connection> connections = new HashMap<>();
+    private static final Map<String, Connection> serverConnections = new HashMap<>();
     
     /**
      * Connection map where you are the client.
@@ -45,8 +48,36 @@ public class ConnectionManager {
      */
     public static void sayToServer(String msg){
         synchronized (lock) {
-            for(Connection cs : clientConnections.values()){
+            for(Connection cs : serverConnections.values()){
                 cs.say(msg);
+            }
+        }
+    }
+    
+    /**
+     * Sends a byte array to all connected servers.
+     * @param msg
+     * @param bytes
+     * @throws IOException 
+     */
+    public static void sayToServer(String msg, byte[] bytes) throws IOException{
+        synchronized (lock) {
+            for(Connection cs : serverConnections.values()){
+                cs.say(msg, bytes);
+            }
+        }
+    }
+    
+    /**
+     * Sends a file to all connected servers.
+     * @param msg
+     * @param file
+     * @throws IOException 
+     */
+    public static void sayToServer(String msg, File file) throws IOException{
+        synchronized (lock) {
+            for(Connection cs : serverConnections.values()){
+                cs.say(msg, file);
             }
         }
     }
@@ -58,7 +89,19 @@ public class ConnectionManager {
      */
     public static void sayToServer(String msg, String ip){
         synchronized (lock) {
-            clientConnections.get(ip).say(msg);
+            serverConnections.get(ip).say(msg);
+        }
+    }
+    
+    /**
+     * Sends a byte array for a specific server.
+     * @param msg Message to be sent.
+     * @param bytes bytes to be sent.
+     * @param ip Server IP that message will be sent.
+     */
+    public static void sayToServer(String msg, byte[] bytes, String ip) throws IOException{
+        synchronized (lock) {
+            serverConnections.get(ip).say(msg, bytes);
         }
     }
 
@@ -68,30 +111,57 @@ public class ConnectionManager {
      */
     public static void sayToClient(String msg){
         synchronized (lock) {
-            for(Connection cs : connections.values()){
+            for(Connection cs : clientConnections.values()){
                 cs.say(msg);
             }
         }
     }
     
     /**
-     * Sends a message to a specific client.
+     * Sends a byte array for all connected clients.
      * @param msg Message to be sent.
+     * @param bytes
+     */
+    public static void sayToClient(String msg, byte[] bytes) throws IOException{
+        synchronized (lock) {
+            for(Connection cs : clientConnections.values()){
+                cs.say(msg, bytes);
+            }
+        }
+    }
+    
+    /**
+     * Sends a file for all connected clients.
+     * @param msg Message to be sent.
+     * @param file
+     */
+    public static void sayToClient(String msg, File file) throws IOException{
+        synchronized (lock) {
+            for(Connection cs : clientConnections.values()){
+                cs.say(msg, file);
+            }
+        }
+    }
+    
+    /**
+     * Sends a byte array to a specific client.
+     * @param msg Message to be sent.
+     * @param bytes
      * @param ip Client IP that message will be sent.
      */
-    public static void seyToClient(String msg, String ip){
+    public static void seyToClient(String msg, byte[] bytes, String ip) throws IOException{
         synchronized (lock) {
-            connections.get(ip).say(msg);
+            clientConnections.get(ip).say(msg, bytes);
         }
     }
 
     /**
-     * Puts a new socket in the Connections Map.
-     * @param socket 
+     * Puts a new connection in the Connections Map.
+     * @param connection
      */
-    public static void addConnection(Connection connection){
+    public static void addServerConnection(Connection connection){
         synchronized (lock) {
-            connections.put(connection.getIp(), connection);
+            serverConnections.put(connection.getIp(), connection);
         }
     }
     
@@ -100,18 +170,18 @@ public class ConnectionManager {
      * @param ip The connection IP to remove.
      * @return Result of operation.
      */
-    public static boolean removeConnection(String ip){
+    public static boolean removeServerConnection(String ip){
         synchronized (lock) {
-            if(connections.containsKey(ip)){
-                connections.remove(ip);
+            if(serverConnections.containsKey(ip)){
+                serverConnections.remove(ip);
             }
             return false;
         }
     }
     
     /**
-     * Puts a new socket in the Client Connections Map.
-     * @param socket 
+     * Puts a new connection in the Client Connections Map.
+     * @param connection 
      */
     public static void addClientConnection(Connection connection){
         synchronized (lock) {
@@ -149,19 +219,25 @@ public class ConnectionManager {
      */
     public static List<String> getConnectedServer(){
         synchronized (lock) {
-            return connections.keySet().stream().collect(Collectors.toList());
+            return serverConnections.keySet().stream().collect(Collectors.toList());
         }
     }
     
+    /**
+     * @return Number of client connections that are open.
+     */
     public static int getClientCount(){
         synchronized (lock) {
             return clientConnections.size();
         }
     }
     
+    /**
+     * @return Number of server connections that are open.
+     */
     public static int getServerCount(){
         synchronized (lock) {
-            return connections.size();
+            return serverConnections.size();
         }
     }
     

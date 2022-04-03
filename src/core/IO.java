@@ -203,12 +203,12 @@ public class IO {
                     }
 
                     // boleano que verificará se o item passou no teste.
-                    boolean ok = true;
-                    boolean okmaster = false;
+                    boolean passouEmTodos = true;
+                    boolean passouEmUm = false;
 
                     // Percorre cada verificação desejada.
                     for(String verificacaoAtual : filter.keySet()){
-                        boolean ok2 = true;
+                        boolean passouNoAtual = true;
                         //verifica se o item possui a chave de verificação desejada.
                         if(mapaJson.containsKey(verificacaoAtual)){
                             //Verifica se o valor a ser verificado é texto ou número.
@@ -218,18 +218,18 @@ public class IO {
                                     if(!("\""+filter.get(verificacaoAtual)+"\"").equals(mapaJson.get(verificacaoAtual))){
                                         //Se os valores foram diferentes para a mesma chave, o item é descartado.
                                         if(allfilters){
-                                            ok = false;
+                                            passouEmTodos = false;
                                             break;
                                         } else {
-                                            ok2 = false;
+                                            passouNoAtual = false;
                                         }
                                     }
                                 } else if(!mapaJson.get(verificacaoAtual).contains(filter.get(verificacaoAtual))){
                                     if(allfilters){
-                                        ok = false;
+                                        passouEmTodos = false;
                                         break;
                                     } else {
-                                        ok2 = false;
+                                        passouNoAtual = false;
                                     }
                                 }
                             } else if(mapaJson.get(verificacaoAtual).contains(".")){ //verifica se é decimal.
@@ -240,18 +240,18 @@ public class IO {
                                     if(a != b){
                                         //Se forem decimais diferentes para a mesma chave, o item é descartado.
                                         if(allfilters){
-                                            ok = false;
+                                            passouEmTodos = false;
                                             break;
                                         } else {
-                                            ok2 = false;
+                                            passouNoAtual = false;
                                         }
                                     }
                                 } else if(!mapaJson.get(verificacaoAtual).contains(filter.get(verificacaoAtual))){
                                     if(allfilters){
-                                        ok = false;
+                                        passouEmTodos = false;
                                         break;
                                     } else {
-                                        ok2 = false;
+                                        passouNoAtual = false;
                                     }
                                 }
                             } else { //Último caso, trata de um inteiro.
@@ -262,32 +262,32 @@ public class IO {
                                     if(a != b){
                                         //Se o inteiro for diferente para a mesma chave, o item é descartado.
                                         if(allfilters){
-                                            ok = false;
+                                            passouEmTodos = false;
                                             break;
                                         } else {
-                                            ok2 = false;
+                                            passouNoAtual = false;
                                         }
                                     }
                                 } else if(!mapaJson.get(verificacaoAtual).contains(filter.get(verificacaoAtual))){
                                     if(allfilters){
-                                        ok = false;
+                                        passouEmTodos = false;
                                         break;
                                     } else {
-                                        ok2 = false;
+                                        passouNoAtual = false;
                                     }
                                 }
                             }
 
-                        if(ok2){
-                            if(!allfilters){
-                                okmaster = true;
-                                ok = false;
+                            if(passouNoAtual){
+                                if(!allfilters){
+                                    passouEmUm = true;
+                                    passouEmTodos = false;
+                                }
                             }
-                        }
 
                         } else {
                             if(allfilters){
-                                ok = false;
+                                passouEmTodos = false;
                                 break;
                             }
                         }
@@ -298,11 +298,11 @@ public class IO {
                     //É para verificar levando em conta todos os filtros? Ou passando em somente um está ok?
                     if(allfilters){
                         //Está ok para ter passado em todos os filtros?
-                        if(ok){
+                        if(passouEmTodos){
                             lista.add(gson.fromJson(jsonOriginal, classe));
                         }
                     } else { //Não é para verificar todos os filtros, passando em um está ok!
-                        if(okmaster){ // Passou em pelo menos um filtro?
+                        if(passouEmUm){ // Passou em pelo menos um filtro?
                             lista.add(gson.fromJson(jsonOriginal, classe));
                         }
                     }

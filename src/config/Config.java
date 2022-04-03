@@ -60,7 +60,7 @@ public class Config {
      * If you want to cache results. Used only if you are a client.
      * You can be client and server at the same time.
      */
-    public static String cache = null;
+    public static boolean cache = false;
     
     /**
      * The port that server will listen.
