@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package server;
+package jhonDES.server.core;
 
-import core.interpreters.InterpreterMemory;
+import jhonDES.server.interpreters.InterpreterMemory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

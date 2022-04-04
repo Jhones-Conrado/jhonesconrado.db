@@ -16,17 +16,17 @@
  */
 package testes;
 
-import core.interpreters.Alerta;
-import core.interpreters.Cloner;
-import core.interpreters.OnlyReceive;
+import jhonDES.server.interpreters.Alerta;
+import jhonDES.server.interpreters.Cloner;
+import jhonDES.server.interpreters.OnlyReceive;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import server.Connection;
-import server.Server;
+import jhonDES.server.core.Connection;
+import jhonDES.server.core.Server;
 
 /**
  *
