@@ -16,6 +16,7 @@
  */
 package jhonDES.db.interfaces;
 
+import com.google.gson.Gson;
 import jhonDES.db.filter.Filter;
 import jhonDES.db.core.IO;
 import jhonDES.db.core.IdManager;
@@ -174,6 +175,17 @@ public interface Entity extends Serializable{
      */
     default <T extends Entity> void deleteAllByFilter(Filter filter) throws IOException{
         IO.deleteAllByFilter(this.getClass(), filter);
+    }
+    
+    /**
+     * Converte a entidade em JSON.
+     * Convert the entity in JSON.
+     * @param <T>
+     * @return 
+     */
+    default <T extends Entity> String getAsJSON(){
+        Gson g = new Gson();
+        return g.toJson(this);
     }
     
 }

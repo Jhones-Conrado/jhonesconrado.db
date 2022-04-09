@@ -124,12 +124,19 @@ public class JsonUtils {
             
             int increment = 1;
             
+            //localização da primeira aspa
             int primeira = temp.indexOf("\"");
+            
+            //localização da segunda aspa
             int segunda = temp.indexOf("\"", primeira+1);
             
+            //chave do atributo
             String chave = temp.substring(primeira+1, segunda);
             String valor = null;
             
+            String key = null;
+            
+            //Verifica se é um texto
             if(temp.substring(segunda+2, segunda+3).equals("\"")){
                 primeira = segunda+3;
                 segunda = temp.indexOf("\"", primeira);
@@ -140,29 +147,45 @@ public class JsonUtils {
                 }
                 valor = temp.substring(primeira, segunda);
                 att.put(chave, valor);
-            } else if(temp.substring(segunda+2, segunda+3).equals("{")){
-                primeira = segunda+3;
-                int count = 1;
-                int loop = 3;
-                while(count > 0){
-                    if(temp.substring(segunda+loop, segunda+loop+1).equals("{")){
-                        count++;
-                    } else if(temp.substring(segunda+loop, segunda+loop+1).equals("}")){
-                        count--;
-                    }
-                    loop++;
+            } 
+            //Verifica se é um objeto
+            else if(temp.substring(segunda+2, segunda+3).equals("{")){
+                key = "{";
+            } 
+            //Verifica se é um array
+            else if(temp.substring(segunda+2, segunda+3).equals("[")){
+                key = "[";
+            }
+            
+            //Caso de número
+            else {
+                primeira = segunda+2;
+                int count = 0;
+                while("-0123456789.".contains(temp.substring(primeira+count, primeira+count+1))){
+                    count++;
                 }
-                segunda = segunda+loop;
-                valor = temp.substring(primeira-1, segunda);
+                segunda = primeira+count;
+                valor = temp.substring(primeira, segunda);
                 att.put(chave, valor);
-            } else if(temp.substring(segunda+2, segunda+3).equals("[")){
+                increment = 0;
+            }
+            
+            if(key != null){
+                String close = null;
+                
+                if(key.equals("{")){
+                    close = "}";
+                } else {
+                    close = "]";
+                }
+                
                 primeira = segunda+3;
                 int count = 1;
                 int loop = 3;
                 while(count > 0){
-                    if(temp.substring(segunda+loop, segunda+loop+1).equals("[")){
+                    if(temp.substring(segunda+loop, segunda+loop+1).equals(key)){
                         count++;
-                    } else if(temp.substring(segunda+loop, segunda+loop+1).equals("]")){
+                    } else if(temp.substring(segunda+loop, segunda+loop+1).equals(close)){
                         count--;
                     }
                     loop++;
@@ -170,16 +193,6 @@ public class JsonUtils {
                 segunda = segunda+loop-1;
                 valor = temp.substring(primeira-1, segunda+1);
                 att.put(chave, valor);
-            } else {
-                primeira = segunda+2;
-                int count = 0;
-                while("0123456789.".contains(temp.substring(primeira+count, primeira+count+1))){
-                    count++;
-                }
-                segunda = primeira+count;
-                valor = temp.substring(primeira, segunda);
-                att.put(chave, valor);
-                increment = 0;
             }
             
             temp = temp.substring(segunda+increment);
