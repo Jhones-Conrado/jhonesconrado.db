@@ -68,6 +68,8 @@ public class Config {
      */
     public static int myServerPort = 15200;
     
+    public static String HTMLFolderName = "templates";
+    
     /**
      * If you want to shutdown the server, just put "true" here.
      */

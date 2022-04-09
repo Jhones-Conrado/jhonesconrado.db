@@ -141,6 +141,12 @@ public class HTMLManager {
         return true;
     }
     
+    /**
+     * Procura um arquivo HTML dentro do pacote de HTMLs.
+     * @param name
+     * @return
+     * @throws IOException 
+     */
     public static String getHTML(String name) throws IOException{
         if(!name.endsWith(".html")){
             name = name+".html";
@@ -157,7 +163,7 @@ public class HTMLManager {
     
     private File getHtml(String name){
         try {
-            return new File(getClass().getResource("/jhonDES/template/html/"+name).toURI());
+            return new File(getClass().getResource("/"+config.Config.HTMLFolderName+"/"+name).toURI());
         } catch (URISyntaxException ex) {
             Logger.getLogger(HTMLManager.class.getName()).log(Level.SEVERE, null, ex);
         }
