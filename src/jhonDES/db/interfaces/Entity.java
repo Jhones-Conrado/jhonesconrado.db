@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import jhonDES.template.populate.FillTemplate;
 
 /**
  * Uma interface com todos os métodos mais básicos de uma entidade, permite 
@@ -186,6 +187,16 @@ public interface Entity extends Serializable{
     default <T extends Entity> String getAsJSON(){
         Gson g = new Gson();
         return g.toJson(this);
+    }
+    
+    /**
+     * Preenche um HTML a partir dos campos da entidade.
+     * @param <T>
+     * @param html
+     * @return 
+     */
+    default <T extends Entity> String fillTemplate(String html){
+        return new FillTemplate().fill(html, this);
     }
     
 }

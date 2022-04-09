@@ -34,12 +34,14 @@ public class FilterItem {
     /**
      * Verifica um attributo. Por padrão, caso seja uma verificação parcial, o
      * fragmento de valor será buscado em qualquer parte do valor do JSON.
-     * @param fullyMatch Deverá coicidir totalmente ou parcialmente.
+     * Esse construtor irá comparar a totalidade do valor.
+     * 
+     * Para comparar valores parcialmente utilizar o outro construtor.
      * @param key Chave do atributo.
      * @param value Valor ou fragmento de valor a ser comparado.
      */
-    public FilterItem(boolean fullyMatch, String key, String value) {
-        this.fullyMatch = fullyMatch;
+    public FilterItem(String key, String value) {
+        this.fullyMatch = true;
         this.key = key;
         this.value = value;
         matchMethod = 0;

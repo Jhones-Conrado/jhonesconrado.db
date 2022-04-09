@@ -16,7 +16,6 @@
  */
 package jhonDES.template.populate;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import jhonDES.db.core.JsonUtils;
@@ -37,7 +36,7 @@ public class FillTemplate {
     public String fill(String template, String json){
         template = putAttributes(template, json);
         template = putLinks(template, json);
-        template = clearCampos(template);
+        template = HTMLManager.clearCampos(template);
         return template;
     }
     
@@ -50,7 +49,7 @@ public class FillTemplate {
     public String fill(String template, Entity entity){
         template = putAttributes(template, entity);
         template = putLinks(template, entity);
-        template = clearCampos(template);
+        template = HTMLManager.clearCampos(template);
         return template;
     }
     
@@ -97,7 +96,7 @@ public class FillTemplate {
     private String putAttributes(String base, String json){
         Map<String, String> att = JsonUtils.getAttributes(json);
         if(base.contains("campo=\"")){
-            List<Integer> campos = list(base, "campo=\"");
+            List<Integer> campos = HTMLManager.list(base, "campo=\"");
             //Loop para fill os campos, começando do último para o primeiro.
             for(int i = campos.size()-1 ; i >= 0 ; i--){
                 // Faz um recuo permanente no HTML até encontrar a abertura da tag.
@@ -111,7 +110,7 @@ public class FillTemplate {
                 // Verifica se é diferente de um link.
                 if(!base.substring(indice-1, indice+2).equals("<a ")){
                     //Extrai a chave do campo que está sendo preenchido na volta atual do loop.
-                    String chave = getKeyFromCampo(base.substring(campos.get(i)));
+                    String chave = HTMLManager.getValueFromCampo(base.substring(campos.get(i)));
                     //Verifica se o Objeto informado como referência possui esse achado no HTML.
                     if(att.containsKey(chave)){
                         //HTML que ficará antes do valor do campo informado.
@@ -146,7 +145,7 @@ public class FillTemplate {
      */
     private String putLinks(String base, String JSON){
         Map<String, String> att = JsonUtils.getAttributes(JSON);
-        List<Integer> links = list(base, "<a");
+        List<Integer> links = HTMLManager.list(base, "<a");
         
         //Percorre todos os links, preenchendo-os do último para o primeiro.
         for(int i = links.size()-1 ; i >= 0 ; i--){
@@ -161,7 +160,7 @@ public class FillTemplate {
                 String ref = null;
                 //Verifica se o link deve ser completado a partir de algum campo específico.
                 if(tag.contains("campo=\"")){
-                    String key = getKeyFromCampo(tag);
+                    String key = HTMLManager.getValueFromCampo(tag);
                     //verifica se o objeto informado como referência possui o campo pedido.
                     if(att.containsKey(key)){
                         ref = att.get(key);
@@ -190,66 +189,6 @@ public class FillTemplate {
     }
     
     /**
-     * Limpa do HTML todos os parâmetros "campo".
-     * @param base
-     * @return 
-     */
-    private String clearCampos(String base){
-        if(base != null){
-            if(base.contains("campo=\"")){
-                List<Integer> campos = new ArrayList<>();
-                int from = 0;
-                while((from = base.indexOf("campo=\"", from)) != -1){
-                    campos.add(base.indexOf("campo=\"", from));
-                    from = base.indexOf("campo=\"", from)+7;
-                }
-                for(int i = campos.size()-1 ; i >= 0 ; i--){
-                    String pre = base.substring(0, campos.get(i));
-                    String pos = base.substring(base.indexOf("\"", campos.get(i)+7)+1);
-                    base = pre+pos;
-                }
-            }
-            base = base.replaceAll(" >", ">");
-            return base;
-        }
-        return base;
-    }
-    
-    /**
-     * Conta as ocorrências de uma string no html informado.
-     * @param html Template base.
-     * @param key Chave para busca.
-     * @return Lista com a posição das ocorrências.
-     */
-    private List<Integer> list(String html, String key){
-        List<Integer> links = new ArrayList<>();
-        if(html != null){
-            int from = 0;
-            while((from = html.indexOf(key, from)) != -1){
-                links.add(html.indexOf(key, from));
-                from = html.indexOf(key, from)+key.length();
-            }
-        }
-        return links;
-    }
-    
-    /**
-     * Recebe um html, procura algum parâmetro "campo" e retorna a chave.
-     * Retornará a chave da primeira ocorrência de parâmetro "campo".
-     * @param taghtml TagHTML.
-     * @return 
-     */
-    private String getKeyFromCampo(String taghtml){
-        if(taghtml.contains("campo=\"")){
-            // local da aspa de fechamento do parâmetro campo.
-            int indice = taghtml.indexOf("\"", taghtml.indexOf("campo=\"")+7);
-            // Chave do parâmetro campo.
-            return taghtml.substring(taghtml.indexOf("campo=\"")+7, indice);
-        }
-        return null;
-    }
-    
-    /**
      * Completa o link de um parâmetro href com a informação passada.
      * @param taghtml Tag HTML com o parâmetro href.
      * @param info
@@ -268,29 +207,6 @@ public class FillTemplate {
         return taghtml;
     }
     
-    /**
-     * Verifica se todas as tags do HTML foram fechadas corretamente.
-     * @param html HTML para verificar.
-     * @return resultado da verificação.
-     */
-    private boolean allTagsClosed(String html){
-        if(html.length()>0){
-            int o = 0;
-            for(int i = 0 ; i < html.length()-1 ; i++){
-                if(html.substring(i, i+1).equals("<")){
-                    o++;
-                } else if(html.substring(i, i+1).equals(">")){
-                    o--;
-                }
-                if(o == 2 || o == -1){
-                    return false;
-                }
-            }
-            if(o != 0){
-                return false;
-            }
-        }
-        return true;
-    }
+    
     
 }
