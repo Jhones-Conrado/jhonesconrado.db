@@ -16,17 +16,13 @@
  */
 package jhonDES.template.populate;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -151,23 +147,27 @@ public class HTMLManager {
         if(!name.endsWith(".html")){
             name = name+".html";
         }
-        BufferedReader r = Files.newBufferedReader(new HTMLManager().getHtml(name).toPath());
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        while((line = r.readLine()) != null){
-            sb.append(line);
-            sb.append("\n");
-        }
-        return sb.toString();
+        return new HTMLManager().getHtml(name);
     }
     
-    private File getHtml(String name){
-        try {
-            return new File(getClass().getResource("/"+config.Config.HTMLFolderName+"/"+name).toURI());
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(HTMLManager.class.getName()).log(Level.SEVERE, null, ex);
+    private String getHtml(String name) throws IOException{
+        String retorno = null;
+
+        InputStream in = getClass().getResourceAsStream("/templates/index.html");
+        if(in != null){
+            BufferedReader r = new BufferedReader(new InputStreamReader(in));
+            StringBuilder sb = new StringBuilder();
+            String temp;
+            while((temp = r.readLine()) != null){
+                sb.append(temp);
+                sb.append("\n");
+            }
+            return sb.toString();
+        } else {
+            System.out.println("não existe");
         }
-        return null;
+        
+        return retorno;
     }
     
 }

@@ -82,12 +82,14 @@ public class PreparePage {
      * @return 
      */
     public String getTemplate(String html){
-        if(html.contains("entity=\"")){
-            int indice = html.indexOf("entity=\"");
-            if(indice > 0){
-                int starttag = getTagStartIndex(html, indice);
-                int finaltag = getTagFinalIndex(html, indice);
-                return html.substring(starttag, finaltag);
+        if(html != null){
+            if(html.contains("entity=\"")){
+                int indice = html.indexOf("entity=\"");
+                if(indice > 0){
+                    int starttag = getTagStartIndex(html, indice);
+                    int finaltag = getTagFinalIndex(html, indice);
+                    return html.substring(starttag, finaltag);
+                }
             }
         }
         return null;
