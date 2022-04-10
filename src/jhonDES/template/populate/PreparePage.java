@@ -53,23 +53,26 @@ public class PreparePage {
      * @return HTML preenchido.
      */
     public String fillEntities(String html, Filter filter){
-        String template = getTemplate(html);
-        if(template != null){
-            try {
-                String entityType = getEntityType(html);
-                Class<?> forName = Class.forName(entityType);
-                Entity e = (Entity) forName.newInstance();
-                List<Entity> all;
-                if(filter != null){
-                    all = e.loadAll(filter);
-                } else {
-                    all = e.loadAll();
+        while(html.contains("entity=\"")){
+            String template = getTemplate(html);
+            if(template != null){
+                try {
+                    String entityType = getEntityType(template);
+                    Class<?> forName = Class.forName(entityType);
+                    Entity e = (Entity) forName.newInstance();
+                    List<Entity> all;
+                    if(filter != null){
+                        all = e.loadAll(filter);
+                    } else {
+                        all = e.loadAll();
+                    }
+                    String filledHtml = new FillTemplate().fill(template, all);
+                    
+                    int parentStart = getParentStartIndex(html, "entity=\"");
+                    html = clearTagAndPut(html, parentStart, filledHtml);
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException ex) {
+                    Logger.getLogger(PreparePage.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                String filledHtml = new FillTemplate().fill(template, all);
-                int parentStart = getParentStartIndex(html, "entity=\"");
-                return clearTagAndPut(html, parentStart, filledHtml);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException ex) {
-                Logger.getLogger(PreparePage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return html;
@@ -87,7 +90,7 @@ public class PreparePage {
                 int indice = html.indexOf("entity=\"");
                 if(indice > 0){
                     int starttag = getTagStartIndex(html, indice);
-                    int finaltag = getTagFinalIndex(html, indice);
+                    int finaltag = getTagFinalIndex(html, starttag);
                     return html.substring(starttag, finaltag);
                 }
             }
@@ -131,7 +134,7 @@ public class PreparePage {
             }
             tagStart = html.indexOf(">", tagStart) + 1;
             count = count - type.length() - 2;
-            return html.substring(0, tagStart) + toPutIn + html.substring(count);
+            return html.substring(0, tagStart) + "\n" + toPutIn + html.substring(count);
         }
         return html;
     }
@@ -174,13 +177,12 @@ public class PreparePage {
     /**
      * 
      * @param html
-     * @param start Posição do início da tag, imediatamente anterior a abertura
-     * <.
+     * @param start Posição do início da tag, imediatamente anterior a abertura.
      * @return 
      */
     public int getTagFinalIndex(String html, int start){
         String type = getTagType(html, start+1);
-        start = html.indexOf(type) + type.length();
+        start = html.indexOf(type, start+type.length());
         int count = 1;
         while(count > 0){
             start = html.indexOf(type, start);

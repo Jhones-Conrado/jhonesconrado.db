@@ -66,11 +66,12 @@ public interface Entity extends Serializable{
      * @throws FileNotFoundException
      * @throws ClassNotFoundException 
      */
-    default void save() throws IOException, FileNotFoundException, ClassNotFoundException{
+    default <T extends Entity> T save() throws IOException, FileNotFoundException, ClassNotFoundException{
         if(getId() == -1l){
             setId(IdManager.getInstance().getNewId(this.getClass()));
         }
         IO.save(this);
+        return (T) this;
     }
     
     /**

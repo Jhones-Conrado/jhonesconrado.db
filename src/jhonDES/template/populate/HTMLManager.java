@@ -16,7 +16,6 @@
  */
 package jhonDES.template.populate;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,17 +91,34 @@ public class HTMLManager {
      * @return 
      */
     public static String clearCampos(String base){
-        if(base != null){
-            if(base.contains("campo=\"")){
+        return clear(base, "campo");
+    }
+    
+    public static String clearEntitiesFields(String base){
+        return clear(base, "entity");
+    }
+    
+    /**
+     * Recebe um HTML e um parâmetro a ser removido do HTML.
+     * @param base HTML a ser limpo.
+     * @param field Parâmetro a ser removido.
+     * @return HTML limpo.
+     */
+    public static String clear(String base, String field){
+        if(base != null && field != null){
+            if(!field.endsWith("=\"")){
+                field = field + "=\"";
+            }
+            if(base.contains(field)){
                 List<Integer> campos = new ArrayList<>();
                 int from = 0;
-                while((from = base.indexOf("campo=\"", from)) != -1){
-                    campos.add(base.indexOf("campo=\"", from));
-                    from = base.indexOf("campo=\"", from)+7;
+                while((from = base.indexOf(field, from)) != -1){
+                    campos.add(base.indexOf(field, from));
+                    from = base.indexOf(field, from)+field.length();
                 }
                 for(int i = campos.size()-1 ; i >= 0 ; i--){
                     String pre = base.substring(0, campos.get(i));
-                    String pos = base.substring(base.indexOf("\"", campos.get(i)+7)+1);
+                    String pos = base.substring(base.indexOf("\"", campos.get(i)+field.length())+1);
                     base = pre+pos;
                 }
             }
@@ -111,6 +127,7 @@ public class HTMLManager {
         }
         return base;
     }
+    
     
     /**
      * Verifica se todas as tags do HTML foram fechadas corretamente.

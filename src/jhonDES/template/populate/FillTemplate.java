@@ -50,6 +50,7 @@ public class FillTemplate {
         template = putAttributes(template, entity);
         template = putLinks(template, entity);
         template = HTMLManager.clearCampos(template);
+        template = HTMLManager.clearEntitiesFields(template);
         return template;
     }
     
@@ -154,7 +155,7 @@ public class FillTemplate {
             
             // Corpo da tag "a"
             String tag = base.substring(links.get(i), ind);
-
+            
             // Verifica se contém um link a ser completado.
             if(tag.contains("href=\"")){
                 String ref = null;
@@ -169,7 +170,6 @@ public class FillTemplate {
                         ref = att.get("id");
                     }
                 } else {
-                    //Assume o ID como valor padrão caso nenhum campo tenha sido passado no corpo da tag "a".
                     ref = att.get("id");
                 }
                 base = base.substring(0, links.get(i)) + completeLink(tag, ref) + base.substring(ind);
@@ -189,24 +189,46 @@ public class FillTemplate {
     }
     
     /**
-     * Completa o link de um parâmetro href com a informação passada.
-     * @param taghtml Tag HTML com o parâmetro href.
-     * @param info
-     * @return 
+     * Adiciona uma informação ao final de determinado parâmetro da tag.<br/>
+     * Por exemplo: Se tenho href="meulink" e uma informação "joão", o retorno
+     * será href="meulink/joão".
+     * @param taghtml HTML da tag.
+     * @param param Parâmetro a ser completado.
+     * @param info Informação a ser adicionada no final do parâmetro.
+     * @return Tag com parâmetro preenchido.
      */
-    private String completeLink(String taghtml, String info){
-        if(taghtml.contains("href=\"")){
-            //Local de fechamento da aspa do parâmetro href.
-            int finalhref = taghtml.indexOf("\"", taghtml.indexOf("href=\"")+6);
-            //Verifica se o link foi informado com ou sem a barra final.
-            if(!taghtml.substring(finalhref-1, finalhref).equals("/")){
+    private String completeParam(String taghtml, String param, String info){
+        if(!param.endsWith("=\"")){
+            param = param + "=\"";
+        }
+        if(taghtml.contains(param)){
+            int finalParam = taghtml.indexOf("\"", taghtml.indexOf(param)+param.length());
+            if(!taghtml.substring(finalParam-1, finalParam).equals("/")){
                 info = "/"+info;
             }
-            return taghtml = taghtml.substring(0, finalhref) + info + taghtml.substring(finalhref);
+            return taghtml = taghtml.substring(0, finalParam) + info + taghtml.substring(finalParam);
         }
         return taghtml;
     }
     
+    /**
+     * Completa o link de um parâmetro href com a informação passada.
+     * @param taghtml Tag HTML com o parâmetro href.
+     * @param info Informação que ficará ao final do link.
+     * @return Tag com parâmetro completo.
+     */
+    private String completeLink(String taghtml, String info){
+        return completeParam(taghtml, "href", info);
+    }
     
+    /**
+     * Completa o link de um parâmetro src com a informação passada.
+     * @param taghtml Tag HTML com o parâmetro src.
+     * @param info Informação que ficará ao final do link.
+     * @return Tag com parâmetro completo.
+     */
+    private String completeSRC(String taghtml, String info){
+        return completeParam(taghtml, "src", info);
+    }
     
 }
