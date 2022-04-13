@@ -164,13 +164,16 @@ public class HTMLManager {
         if(!name.endsWith(".html")){
             name = name+".html";
         }
+        if(name.startsWith("/") && name.length() > 1){
+            name = name.substring(1);
+        }
         return new HTMLManager().getHtml(name);
     }
     
     private String getHtml(String name) throws IOException{
         String retorno = null;
 
-        InputStream in = getClass().getResourceAsStream("/templates/index.html");
+        InputStream in = getClass().getResourceAsStream("/templates/"+name);
         if(in != null){
             BufferedReader r = new BufferedReader(new InputStreamReader(in));
             StringBuilder sb = new StringBuilder();
@@ -181,7 +184,7 @@ public class HTMLManager {
             }
             return sb.toString();
         } else {
-            System.out.println("não existe");
+            System.out.println("Template does not exist.");
         }
         
         return retorno;

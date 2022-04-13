@@ -24,10 +24,10 @@ import jhonDES.db.filter.Filter;
 import jhonDES.db.interfaces.Entity;
 
 /**
- *
+ * Responsável por identificar entidades no HTML e preencher os campos exigidos.
  * @author jhonesconrado
  */
-public class PreparePage {
+public class EntitiesFiller {
     
     /**
      * Recebe um HTML, identifica qual a entidade a ser preenchida, identifica
@@ -71,7 +71,7 @@ public class PreparePage {
                     int parentStart = getParentStartIndex(html, "entity=\"");
                     html = clearTagAndPut(html, parentStart, filledHtml);
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException ex) {
-                    Logger.getLogger(PreparePage.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(EntitiesFiller.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
