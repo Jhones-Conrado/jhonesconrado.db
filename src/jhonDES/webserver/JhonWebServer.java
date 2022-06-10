@@ -22,25 +22,56 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Cria um servidor web que atenderá por padrão na porta 8080.
  * @author jhonesconrado
  */
 public class JhonWebServer {
     
     private int port;
     private ServerSocket server;
-
+    
+    /**
+     * Cria um servidor com a porta padrão 8080.
+     * @throws IOException 
+     */
     public JhonWebServer() throws IOException {
-        port = 8080;
-        server = new ServerSocket(port);
-    }
-
-    public JhonWebServer(int port) throws IOException {
-        this.port = port;
-        server = new ServerSocket(port);
+        this.port = 8080;
+        init();
     }
     
+    /**
+     * Cria um servidor que responderá em uma porta definida.
+     * @param port
+     * @throws IOException 
+     */
+    public JhonWebServer(int port) throws IOException {
+        this.port = port;
+        init();
+    }
+    
+    /**
+     * Instancia o servidor e carrega as classes do projeto.
+     * @throws IOException 
+     */
+    private void init() throws IOException{
+        System.out.println("***************************************************************\n" +
+                            "@@@@@@@@*@@****@@**@@@@@@@@**@@@@@*****@@@*@@@@@@****@@@@@@@@@****@@@@@@\n" +
+                            "***@@****@@****@@*@@@@@@@@@@*@@@@@@****@@@*@@@@@@@@@*@@@*******@@@@@@@@@\n" +
+                            "***@@****@@@@@@@@*@@@****@@@*@@@*@@@***@@@*@@@***@@@*@@@@@@@@@*@@@******\n" +
+                            "@@*@@****@@@@@@@@*@@@****@@@*@@@**@@@**@@@*@@@***@@@*@@@@@@@@@***@@@@@@*\n" +
+                            "@@@@@****@@****@@*@@@@@@@@@@*@@@***@@@@@@@*@@@@@@@@@*@@@*************@@@\n" +
+                            "**@@*****@@****@@**@@@@@@@@**@@@****@@@@@@*@@@@@@****@@@@@@@@@*@@@@@@@**\n" +
+                            "***********************************************************************");
+        System.out.println("Instanciando servidor na porta: "+port);
+        server = new ServerSocket(port);
+        Memory.get(); //Instancia o memory do projeto, que por sua vez instancia o Refleciton.
+    }
+    
+    /**
+     * Inicia o servidor que passará a ouvir na porta definida.
+     */
     public void start(){
+        System.out.println("Servidor iniciado.");
         while(server.isBound() && !server.isClosed()){
             try {
                 new WebCommunication(server.accept()).start();

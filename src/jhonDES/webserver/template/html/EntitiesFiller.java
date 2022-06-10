@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package jhonDES.template.populate;
+package jhonDES.webserver.template.html;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,6 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jhonDES.db.filter.Filter;
 import jhonDES.db.interfaces.Entity;
+import jhonDES.webserver.Memory;
+import jhonDES.webserver.errors.NullHTML;
 
 /**
  * Responsável por identificar entidades no HTML e preencher os campos exigidos.
@@ -37,7 +39,7 @@ public class EntitiesFiller {
      * @param html Base HTML a ser preenchida.
      * @return HTML preenchido.
      */
-    public String fillEntities(String html){
+    public String fillEntities(String html) throws NullHTML{
         return fillEntities(html, null);
     }
     
@@ -52,26 +54,30 @@ public class EntitiesFiller {
      * ao HTML.
      * @return HTML preenchido.
      */
-    public String fillEntities(String html, Filter filter){
+    public String fillEntities(String html, Filter filter) throws NullHTML{
         while(html.contains("entity=\"")){
             String template = getTemplate(html);
             if(template != null){
-                try {
-                    String entityType = getEntityType(template);
-                    Class<?> forName = Class.forName(entityType);
-                    Entity e = (Entity) forName.newInstance();
-                    List<Entity> all;
-                    if(filter != null){
-                        all = e.loadAll(filter);
-                    } else {
-                        all = e.loadAll();
+                if(!template.startsWith("<form")){
+                    try {
+                        String entityType = getEntityType(template);
+                        Entity e = Memory.get().getNewInstanceOf(entityType);
+                        List<Entity> all;
+                        if(filter != null){
+                            all = e.loadAll(filter);
+                        } else {
+                            all = e.loadAll();
+                        }
+                        String filledHtml = new FillTemplate().fill(template, all);
+
+                        int parentStart = getParentStartIndex(html, "entity=\"");
+                        html = clearTagAndPut(html, parentStart, filledHtml);
+                    } catch (InstantiationException | IllegalAccessException | IOException | NullHTML ex) {
+                        Logger.getLogger(EntitiesFiller.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    String filledHtml = new FillTemplate().fill(template, all);
-                    
+                } else {
                     int parentStart = getParentStartIndex(html, "entity=\"");
-                    html = clearTagAndPut(html, parentStart, filledHtml);
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException ex) {
-                    Logger.getLogger(EntitiesFiller.class.getName()).log(Level.SEVERE, null, ex);
+                    html = clearTagAndPut(html, parentStart, HTMLManager.clearEntitiesFields(template));
                 }
             }
         }
@@ -84,7 +90,7 @@ public class EntitiesFiller {
      * @param html
      * @return 
      */
-    public String getTemplate(String html){
+    public String getTemplate(String html) throws NullHTML{
         if(html != null){
             if(html.contains("entity=\"")){
                 int indice = html.indexOf("entity=\"");
@@ -94,15 +100,38 @@ public class EntitiesFiller {
                     return html.substring(starttag, finaltag);
                 }
             }
+        } else {
+            throw new NullHTML();
         }
         return null;
     }
     
-    public String getEntityType(String html){
-        if(html.contains("entity=\"")){
-            int indice = html.indexOf("entity=\"");
-            int ind2 = html.indexOf("\"", indice+8);
-            return html.substring(indice+8, ind2);
+    /**
+     * Retorna o template que estiver dentro da tag main.
+     * @param html
+     * @return
+     * @throws NullHTML 
+     */
+    public String getMainTemplate(String html) throws NullHTML{
+        return getTemplate(HTMLManager.getFirstTag(html, "main"));
+    }
+    
+    /**
+     * Retorna qual a entidade localizada em um html.\n
+     * Buscará por algum campo entity no html e retornará o valor da entidade.
+     * @param html A procurar a entidade.
+     * @return Entidade encontrada.
+     * @throws jhonDES.webserver.errors.NullHTML
+     */
+    public String getEntityType(String html) throws NullHTML{
+        if(html != null){
+            if(html.contains("entity=\"")){
+                int indice = html.indexOf("entity=\"");
+                int ind2 = html.indexOf("\"", indice+8);//O oito vem da largura da string entity=
+                return html.substring(indice+8, ind2);
+            }
+        } else {
+            throw new NullHTML();
         }
         return null;
     }
@@ -135,6 +164,9 @@ public class EntitiesFiller {
             tagStart = html.indexOf(">", tagStart) + 1;
             count = count - type.length() - 2;
             return html.substring(0, tagStart) + "\n" + toPutIn + html.substring(count);
+        } else {
+            System.out.println("ERROR: O método clearTagAndPut está sendo chamando com uma posição errada para a"
+                    + "abertura da tag.");
         }
         return html;
     }

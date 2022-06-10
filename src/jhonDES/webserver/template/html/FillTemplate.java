@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package jhonDES.template.populate;
+package jhonDES.webserver.template.html;
 
 import java.util.List;
 import java.util.Map;
@@ -202,11 +202,11 @@ public class FillTemplate {
             param = param + "=\"";
         }
         if(taghtml.contains(param)){
-            int finalParam = taghtml.indexOf("\"", taghtml.indexOf(param)+param.length());
-            if(!taghtml.substring(finalParam-1, finalParam).equals("/")){
+            int finalDoParametro = taghtml.indexOf("\"", taghtml.indexOf(param)+param.length());
+            if(!taghtml.substring(finalDoParametro-1, finalDoParametro).equals("/")){
                 info = "/"+info;
             }
-            return taghtml = taghtml.substring(0, finalParam) + info + taghtml.substring(finalParam);
+            return taghtml = taghtml.substring(0, finalDoParametro) + info + taghtml.substring(finalDoParametro);
         }
         return taghtml;
     }

@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import jhonDES.template.populate.FillTemplate;
+import jhonDES.webserver.template.html.FillTemplate;
 
 /**
  * Uma interface com todos os métodos mais básicos de uma entidade, permite 
